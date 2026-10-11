@@ -163,6 +163,35 @@ function assertAbortOrTestTarget(r, ctx) {
   );
 }
 
+describe('001: ADV-001-F2 residual — use_env_variable con URL raíz en el CLI', () => {
+  // Defecto verificado offline con parseDbUrl real + lodash.merge real: la
+  // config declara database:'runner_test' y use_env_variable apunta a
+  // 'postgres://x:x@127.0.0.1:1/' (raíz, sin BD). El preflight resuelve la
+  // database *_test y deja pasar, pero config-helper del CLI mergea
+  // parseDbUrl(namedURL) encima → database:'' → Sequelize cae a PGDATABASE dev.
+  // La fábrica directa con las mismas options sigue segura (su constructor URL
+  // usa defaults); el bypass es propio del camino merge del CLI.
+  const fixture = fileURLToPath(new URL('./fixtures/cli-use-env-config.cjs', import.meta.url));
+
+  test('ADV-001-F2 residual: --env test --config fixture + named URL raíz debe abortar (no ECONNREFUSED)', () => {
+    const r = cli(['db:migrate:status', '--env', 'test', '--config', fixture], {
+      RUNNER_SLASH_URL: 'postgres://x:x@127.0.0.1:1/',
+      PGDATABASE: 'runner_dev',
+    });
+    assertGuardAbort(r, 'named URL raíz');
+  });
+
+  test('ADV-001-F2 residual: control — named URL con ruta *_test llega a error de red SIN guardia', () => {
+    const r = cli(['db:migrate:status', '--env', 'test', '--config', fixture], {
+      RUNNER_SLASH_URL: 'postgres://x:x@127.0.0.1:1/runner_test',
+      PGDATABASE: 'runner_dev',
+    });
+    assert.notEqual(r.status, 0);
+    assert.match(r.output, /ECONNREFUSED|ConnectionRefusedError|connect/i);
+    assert.doesNotMatch(r.output, /Guardia de tests/);
+  });
+});
+
 describe('001: ADV-001-F3 replication read/write', () => {
   const repl = (/** @type {string} */ w, /** @type {string} */ rr) =>
     JSON.stringify({
