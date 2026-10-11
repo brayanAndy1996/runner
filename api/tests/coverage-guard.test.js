@@ -13,10 +13,13 @@ const apiDir = fileURLToPath(new URL('../', import.meta.url));
 const guardUrl = new URL('../src/db/guard.js', import.meta.url).href;
 
 describe('001: resolución del nombre de BD (guard.js)', () => {
-  test('database explícito tiene prioridad sobre url y entorno', () => {
+  test('url efectiva tiene prioridad sobre database (precedencia real de Sequelize)', () => {
+    // Corrección de caracterización: la versión anterior de este test
+    // afirmaba database > url, que es justo el bypass ADV-001-F1 — Sequelize
+    // conecta a la url cuando ambos campos están presentes.
     assert.equal(
-      resolveDatabaseName({ database: 'mi_test', url: 'postgres://u@h/otra' }),
-      'mi_test',
+      resolveDatabaseName({ database: 'mi_test', url: 'postgres://u@h/otra_test' }),
+      'otra_test',
     );
   });
 
