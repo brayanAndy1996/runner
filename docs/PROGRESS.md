@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** los siete puntos H-02 aplicados y revalidados; auditoría final sin críticos/altos nuevos abiertos. Falta el reviewer `APROBADO` para cerrar el DoD.
+- **Fase:** spec 001 implementada en la rama; siete puntos H-02 aplicados y revalidados, auditoría adversarial sin críticos/altos abiertos, reviewer independiente `APROBADO` y DoD verificado. La rama está lista para revisión mediante PR, no para merge sin permiso nuevo.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** revisión independiente sobre el código de `bcad321` y este checkpoint documental; después verificar DoD y abrir el PR. Merge no autorizado.
+- **Siguiente acción:** publicar el PR de andamiaje y esperar la decisión de Bryan. No arrancar spec 002 ni fusionar el andamiaje por inferencia.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | H-02 aplicado; pipeline, cobertura, CI y adversarial final verdes; pendiente reviewer/DoD/PR |
+| 001 | Andamiaje | Implementada en rama; reviewer `APROBADO` y DoD verificado; lista para revisión en PR, merge no autorizado |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -127,7 +127,9 @@ Se aplicó el paquete: ajustes compatibles de los puntos 1–3 (ADR 0001), deuda
 - **Auditoría de dependencias:** consulta final `npm audit --json --prefer-online`: API **2 moderadas, 0 altas, 0 críticas**; app **13 moderadas, 51 altas, 0 críticas**, 64 entradas contando ancestros. Mismas cuatro hojas de ADR 0002; no aparece `decode-uri-component`. El snapshot anterior de 66 entradas difiere solo por dos ancestros peer de React Native (`@testing-library/react-native`, `react-native-view-shot`); no se interpreta la variación como una nueva corrección ni un cambio de exposición. No se ejecutó `npm audit fix`.
 - **Adversarial independiente:** sesión [e0ccbf9](https://app.devin.ai/sessions/e0ccbf941b504d23977c374cce13bb96), auditoría del SHA `bcad321`: revalida precedencias URL/CLI, replicación, herencia/falsy, alias, precarga/export-first/caché/symlink y controles seguros offline. **Cero hallazgos nuevos críticos/altos abiertos**; riesgos de dependencias y límites solo aceptados según ADR 0002–0004. Probes contra puerto cerrado, nunca contra `runner_dev` real.
 - **AC-01…AC-10:** conservan pruebas nombradas; AC-01/03/07 suplementados por Docker/migraciones/pipeline reales y AC-08 por el CI remoto. OpenAPI sigue sincronizado con `GET /health`.
-- **Pendiente:** reviewer independiente debe leer código/logs y emitir `APROBADO`; solo entonces el orquestador cerrará DoD y publicará PR. Nada de tracking/auth/media, builds nativos, EAS ni pruebas UI se da por implementado o verificado.
+- **Reviewer independiente:** [revisión final spec 001](https://app.devin.ai/sessions/8f8f993fe14e471391a07d00a7be688f) sobre `7bfc38f` emitió **APROBADO** literal y sin condiciones tras leer código/logs y reproducir AC-01/03/07, F2-R5 y controles sin conectar a `runner_dev`. Su `BLOQUEADO` anterior sobre `5edacf4` es histórico. Comprobó [CI #35](https://github.com/brayanAndy1996/runner/actions/runs/38169073386) para `7bfc38f`: `completed/success`.
+- **DoD verificado por el orquestador:** API 135/135 y app 2/2, lint/typecheck ambos; cobertura API 100 % líneas/93,20 % ramas/100 % funciones y app 100 %; AC-01…AC-10 con test nombrado; sin crítico/alto adversarial abierto; reviewer `APROBADO`; OpenAPI coincide con `/health`; PROGRESS/CONTINUAR al día. La auditoría npm aún reporta los avisos aceptados estrictamente por ADR 0002; no se confunden con el veredicto adversarial.
+- **Siguiente hito:** publicar PR desde `feat/001-andamiaje` y pedir revisión de Bryan. Nada de tracking/auth/media, builds nativos, EAS ni pruebas UI se da por implementado o verificado. Ningún permiso de merge.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
