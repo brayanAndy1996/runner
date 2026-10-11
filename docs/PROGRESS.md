@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** implementación base verde en local; adversarial funcional y correcciones pendientes. No cumple DoD todavía.
+- **Fase:** tercer fix con pipeline y CI verdes; re-test adversarial en curso. No cumple DoD todavía.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** auditoría adversarial de implementación completa, regresiones en rojo por test-writer y correcciones por implementadores. Resolver CI remoto y cobertura completa antes del reviewer.
+- **Siguiente acción:** recibir el re-test adversarial del tercer fix; resolver los hallazgos nuevos con rojo previo si aparecen. Obtener decisiones de dependencias y deuda antes del reviewer.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | verde local; adversarial/corrección |
+| 001 | Andamiaje | tercer fix verde local/remoto; pendientes adversarial, decisiones y reviewer |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -54,6 +54,28 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Inspección del orquestador confirmó bypass de guardia: NODE_ENV=test con `database: runner_test` y `url: postgres://runner:runner@127.0.0.1:1/runner_dev` permite construir Sequelize con nombre efectivo runner_dev. Solo instanciación/lectura/close, sin conexión a la BD. Bloqueante a validar por adversarial; cubrir precedencia, URLs/query/percent-encoding/dialectOptions/replication y CLI con stubs que impidan cualquier acceso a runner_dev.
 - Gap cobertura móvil confirmado por mobile-dev: raíz 100 %, layout 0 %. Aumentar pruebas sin excluir módulos para maquillar métricas.
 
+### Checkpoint del segundo fix (2026-10-11)
+
+- Primer fix `b215a32`: precedencia efectiva, replication, preflight CLI y orden de instalación de ambas dependencias antes de las pruebas API. Se mantuvo el ciclo rojo → fix sin modificar tests desde API-dev.
+- Re-test residual convertido en pruebas por test-writer: `9492df0`, `31042c7` y `a09e8fc`. El orquestador verificó 80 tests API: 68 pass y 12 fail por valores falsy explícitos en replication, URL sin pathname, merge real del CLI, pathname multipath y CLI desde otro CWD con `--config` absoluto.
+- Segundo fix `af5db1b`: API-dev modificó solamente `api/src/db/guard.js`, `connection.js`, `config.js` y `api/.sequelizerc`; no tests, dependencias ni lockfiles. La fábrica propaga el fallback seguro a Sequelize; la guardia CLI diferencia la semántica de `parseDbUrl`/`lodash.merge`, valida el pathname completo y la entrada seleccionada por `--env`.
+- Verificación del orquestador en `af5db1b`: `db-up.sh` real idempotente dos veces, PostgreSQL 16.15 y ambas bases disponibles; `scripts/ci-local.sh` desde entorno sin `DB_NAME`/`NODE_ENV` heredados pasó con migraciones dev/test, 80/80 API y 2/2 app. Lint y typecheck de ambos: exit 0; app mantiene un warning `import/first` en el test del layout.
+- CI remoto **verde para ese commit**: https://github.com/brayanAndy1996/runner/actions/runs/38161717783 . No equivale a aprobación adversarial ni del reviewer.
+- Cobertura medida por el orquestador en ese checkpoint: API global 97,71 % líneas / 76,74 % ramas / 100 % funciones (el reporte incluye fixtures/config); `guard.js` 92,55 % líneas / 84,44 % ramas, `config.js` 100 % / 20 %, `index.js` 100 % / 40 %. App, incluyendo raíz y layout: 100 % en todas las métricas. Test-writer amplía ramas semánticas sin excluir archivos ni alterar instrumentación. **No declarar DoD de cobertura final todavía.**
+- Re-test adversarial de `af5db1b` cerrado, sin conexiones ni autenticación a `runner_dev`. Altos confirmados: F3-R3 (`database` heredada en replication, consumida por Sequelize/pg aunque la guardia usa `hasOwnProperty`) y F2-R3 (`env` desde el rc del CLI, que selecciona `development` aunque `config.js` propio solo valide argv). La variante rc `url` se reclasificó: `config-helper.init()` no carga `config.js` si recibe una URL; sin código propio ejecutado es frontera externa, no un alto de esta guardia.
+- Test-writer añadió cobertura positiva en `60cc55c` y regresiones en `c9f463a`, `30f6389`, `9a85995` y `269f4e7`, solo en `api/tests/**`. El orquestador reprodujo el rojo en `269f4e7`: API 121 tests, 117 pass y 4 fail exclusivamente por F3-R3 (write/read) y F2-R3 (cwd rc/`--options-path`); controles seguros en verde. Los probes usan puerto cerrado, no la BD dev real.
+- Cobertura API sobre el rojo medida por el orquestador, incluyendo `src/**` y `migrations/**`: 100 % líneas / 90,54 % ramas / 100 % funciones global; `guard.js` 100/92,16, `config.js` 100/50 e `index.js` 100/50 (líneas/ramas). No es cobertura final del tercer fix.
+
+### Checkpoint del tercer fix (2026-10-11)
+
+- Tercer fix `bcc934168889b16c40dc1079363a36949bb9c3bb`, API-dev: solo `api/src/db/guard.js`, `config.js` y `api/.sequelizerc`. La replicación comprueba propiedades propias y heredadas; el entorno CLI incluye el rc con precedencia `--env > rc.env > NODE_ENV`. No modifica tests, fixtures, dependencias ni lockfiles.
+- Orquestador reprodujo `scripts/ci-local.sh` desde entorno sin `NODE_ENV`, `DB_NAME`, `DATABASE_URL` ni `PGDATABASE` heredados: exit 0, migraciones dev/test, API 121/121, app 2/2, lint y typecheck de ambos. Permanece el warning móvil `import/first` en el test del layout.
+- CI remoto comprobado directamente por SHA: https://github.com/brayanAndy1996/runner/actions/runs/38162896849 — `completed/success` para `bcc9341`. El rojo anterior `269f4e7` falló en CI; no se confunden ambos estados.
+- Cobertura API medida por el orquestador con todas las fuentes funcionales (`src/**`, `migrations/**`, `.sequelizerc`): 99,50 % líneas / 86,90 % ramas / 100 % funciones global. `guard.js`: 99,04/86,67/100; `config.js` e `index.js`: 100/50/100; `.sequelizerc`, fábrica, health y migración: 100 % en todas las métricas. App, incluyendo raíz y layout: 100 % en todas las métricas, 2/2 tests. No se alteró la instrumentación.
+- Re-test adversarial de `bcc9341` delegado a `e0ccbf941b504d23977c374cce13bb96`: auditoría offline de los dos altos y variantes equivalentes; aún sin veredicto. La guardia no cubre invocaciones externas que omiten cargar código propio; la política de esa frontera sigue pendiente.
+- Decisiones móviles aún **sin autorización**: override `decode-uri-component@0.5.x`, pin `test-renderer@~1.2.0`, alineación Reanimated/Worklets con Expo 57 (4.5.1/0.10.1 frente a transitivas instaladas 4.7.1/0.13.0), ADR y deuda de advisories restantes. `expo install --check` no valida esa diferencia transitiva ni sustituye un build nativo. No se ejecutó `npm audit fix`.
+- No se ha emitido revisión `APROBADO`, publicado el PR de andamiaje ni autorizado su merge. Los bajos/medios adversariales y la frontera del CLI externo sin código propio cargado requieren decisión explícita; no figuran como deuda aceptada.
+
 ## Supuestos abiertos (penden de confirmación del usuario)
 
 - 002: fórmula exacta de calorías (MET + corrección por sexo/altura) se fija con ADR en implementación; default 70 kg si el perfil local no tiene datos; filtro accuracy > 30 m / saltos > 40 km/h.
@@ -66,4 +88,4 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Deuda técnica
 
-- (vacía)
+- Sin deuda aceptada por Bryan todavía. Advisories y hallazgos no bloqueantes están pendientes de decisión, no de aceptación implícita.
