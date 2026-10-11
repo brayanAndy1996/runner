@@ -13,8 +13,13 @@ import { run } from './helpers/proc.js';
 import {
   cliFlagValue,
   cliTargetDatabaseName,
+  cliRcObject,
+  cliEffectiveEnv,
   resolveDatabaseName,
 } from '../src/db/guard.js';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const apiDir = fileURLToPath(new URL('../', import.meta.url));
 const fixtureCliTarget = fileURLToPath(
@@ -177,6 +182,53 @@ describe('001: assertCliTarget — base y replication', () => {
     });
     assert.notEqual(bad.status, 0);
     assert.match(bad.output, /_test/i);
+  });
+});
+
+describe('001: cliRcObject / cliEffectiveEnv (ramas defensivas)', () => {
+  /** Escribe un rc temporal y devuelve su path. @param {string} body */
+  function tmpRc(body) {
+    const dir = mkdtempSync(join(tmpdir(), 'runner-rc-unit-'));
+    const p = join(dir, 'rc.cjs');
+    writeFileSync(p, body);
+    return p;
+  }
+
+  test('rc inexistente / no-objeto / require que lanza → {} sin romper', () => {
+    assert.deepEqual(cliRcObject(['--options-path', '/no/existe/rc.cjs']), {});
+    assert.deepEqual(cliRcObject(['--options-path', tmpRc('module.exports = 42;')]), {});
+    assert.deepEqual(
+      cliRcObject(['--options-path', tmpRc('throw new Error("boom");')]),
+      {},
+    );
+    assert.deepEqual(cliRcObject(['--options-path', tmpRc('module.exports = null;')]), {});
+  });
+
+  test('rc objeto se devuelve; ownRcPath propio se ignora (anti-ciclo)', () => {
+    const p = tmpRc('module.exports = { env: "development" };');
+    assert.deepEqual(cliRcObject(['--options-path', p]), { env: 'development' });
+    // Ignorar el propio rc evita re-ejecutar el preflight recursivamente:
+    // cwd/.sequelizerc == ownRcPath (api/.sequelizerc) → {}.
+    assert.deepEqual(cliRcObject([], rcPath), {});
+    // Un ownRcPath distinto NO se ignora: cae al rc del cwd.
+    const cwdRc = cliRcObject([], '/no/es/este.cjs');
+    assert.equal(typeof cwdRc, 'object');
+  });
+
+  test('cliEffectiveEnv: flag --env > rc.env > NODE_ENV', () => {
+    const devRc = tmpRc('module.exports = { env: "qa" };');
+    const saved = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = 'test';
+      assert.equal(cliEffectiveEnv(['--env', 'production'], 'x'), 'production');
+      assert.equal(cliEffectiveEnv(['--options-path', devRc], 'x'), 'qa');
+      assert.equal(cliEffectiveEnv(['--options-path', '/no/existe'], 'x'), 'test');
+      delete process.env.NODE_ENV;
+      assert.equal(cliEffectiveEnv(['--options-path', '/no/existe'], 'x'), 'development');
+    } finally {
+      if (saved === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = saved;
+    }
   });
 });
 

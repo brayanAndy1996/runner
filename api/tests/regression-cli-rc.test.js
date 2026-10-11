@@ -114,4 +114,57 @@ describe('001: ADV-001-F2-R3 — claves env/url del rc del CLI', () => {
     const cwd = rcDir({ config: configAbs, env: 'development' });
     assertNetworkDeath(cli(cwd, ['--env', 'test']), 'flag --env test sobre rc development');
   });
+
+  test('control — rc env:"test" + flag --env development aborta (el flag gana)', () => {
+    const cwd = rcDir({ config: configAbs, env: 'test' });
+    assertGuardAbort(cli(cwd, ['--env', 'development']), 'rc test + flag --env development');
+  });
+});
+
+describe('001: ADV-001-F2-R4 — --optionsPath camelCase no leído por la guardia', () => {
+  // yargs acepta `--optionsPath` (camelCase) además de `--options-path`; la
+  // guardia solo lee la forma kebab → el rc camel se aplica sin validar.
+  // rc generado en tmpdir (fuera del repo) apuntando a nuestro config.js.
+  /** @param {string[]} optArgs */
+  function camelCaseRc(optArgs) {
+    const dir = rcDir({ config: configAbs, env: 'development' });
+    const rcPath = join(dir, 'rc-camel.cjs');
+    writeFileSync(rcPath, `module.exports = ${JSON.stringify({ config: configAbs, env: 'development' })};\n`);
+    return cli(apiDir, [...optArgs.map((a) => a.replace('RC_PATH', rcPath))]);
+  }
+
+  test('ADV-001-F2-R4: --optionsPath <rc> con env:"development" debe abortar', () => {
+    assertGuardAbort(camelCaseRc(['--optionsPath', 'RC_PATH']), '--optionsPath separado');
+  });
+
+  test('ADV-001-F2-R4: --optionsPath=<rc> con env:"development" debe abortar', () => {
+    assertGuardAbort(camelCaseRc(['--optionsPath=RC_PATH']), '--optionsPath= forma');
+  });
+
+  /** @param {string[]} optArgs @param {string[]} [cliArgs] */
+  function camelCaseEnv(optArgs, cliArgs = []) {
+    const dir = mkdtempSync(join(tmpdir(), 'runner-cli-rc-'));
+    const rcPath = join(dir, 'rc-camel.cjs');
+    writeFileSync(rcPath, `module.exports = ${JSON.stringify({ config: configAbs, env: 'test' })};\n`);
+    return cli(apiDir, [...optArgs.map((a) => a.replace('RC_PATH', rcPath)), ...cliArgs]);
+  }
+
+  test('control — --optionsPath con env:"test" (ambas formas) muere por red SIN guardia', () => {
+    assertNetworkDeath(camelCaseEnv(['--optionsPath', 'RC_PATH']), 'camel env=test separado');
+    assertNetworkDeath(camelCaseEnv(['--optionsPath=RC_PATH']), 'camel env=test forma =');
+  });
+
+  test('control — flag --env test precede a rc camel env:"development" (ambas formas)', () => {
+    const dir = rcDir({ config: configAbs, env: 'development' });
+    const rcPath = join(dir, 'rc-camel.cjs');
+    writeFileSync(rcPath, `module.exports = ${JSON.stringify({ config: configAbs, env: 'development' })};\n`);
+    assertNetworkDeath(
+      cli(apiDir, ['--optionsPath', rcPath, '--env', 'test']),
+      'camel rc dev + flag --env test',
+    );
+    assertNetworkDeath(
+      cli(apiDir, [`--optionsPath=${rcPath}`, '--env', 'test']),
+      'camel= rc dev + flag --env test',
+    );
+  });
 });
