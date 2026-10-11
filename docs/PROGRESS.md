@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** spec 001 aprobada; preparación de dependencias antes de las pruebas rojas.
+- **Fase:** spec 001 aprobada; rojo verificado, siguiente implementación API y móvil.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** test-writer cubre los AC y comprueba el rojo antes de implementar.
+- **Siguiente acción:** api-dev implementa API/BD/scripts/CI sin tocar tests; después mobile-dev implementa raíz/config/plugins.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | aprobada; preparación para rojo |
+| 001 | Andamiaje | rojo verificado; implementación |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -41,6 +41,9 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Preparación API verificada: sesión `f4fcace13a274c7c96bc2f8388bbe954`, commit `67f1802`; dependencias y runners disponibles, sin fuente ni tests. `npm test` ejecutó cero tests: no es evidencia de verde. Contrato propuesto: `createApp()` en `api/src/app.js`, configuración ESM en `api/src/db/config.js`, JS con JSDoc/checkJs. Se delega ahora preparación móvil.
 - Aviso de dependencia para auditoría adversarial: el api-dev reportó dos vulnerabilidades moderadas transitivas de `uuid` en Sequelize; pendiente de comprobación y decisión, sin aplicar cambios automáticos fuera del stack aprobado.
 - Preparación móvil verificada: sesión `9ba161392a30429398acbe151078dcc8`, commit `21b8be5`; SDK 57/RN 0.86.3/React 19.2.3, runners disponibles, sin fuente ni tests. `expo install --check` reportado conforme; cero tests todavía no constituye verde. Contrato: `app/src/app/index.tsx` con texto Runner y `_layout.tsx` para expo-router. La auditoría móvil reporta avisos transitivos, pendientes de evaluación adversarial.
+- Rojo verificado por el orquestador: sesión test-writer `68ed39c3af924cfcab2b7315bbd20aee`, commits `3883878` y `19f23b8` exclusivamente de tests. API: 21 tests, 6 verdes de preparación (AC-06/AC-10), 15 rojos por funcionalidad ausente. App: 1 test rojo por ausencia de raíz. El orquestador reprodujo el rojo API y leyó ambos logs. Corrigió el test-writer un defecto de harness antes del verde: RNTL 14 exige `await render`; su fixture temporal pasó.
+- AC-01 y AC-07 prueban control de flujo con ejecutables falsos para evitar operaciones en BD de desarrollo y recursión; requieren además Docker/pipeline reales. AC-08 tiene prueba estructural y requiere CI real verde. AC-03 prueba migración real solo en `runner_test`; la migración dev se verificará fuera de la suite.
+- Auditoría inicial de dependencias: sesión `e0ccbf941b504d23977c374cce13bb96`, solo lectura. Advierte `decode-uri-component` en deep links (media), `node-forge` en firma/prebuild (media) y `braces`/`sprintf-js`/`uuid` (bajas por uso actual). npm audit conserva altas transitivas. Pendiente de autorización de Bryan para override de `decode-uri-component@0.5.x` con ADR y aceptación explícita de las demás como deuda; no aplicado ni asumido.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 

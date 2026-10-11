@@ -12,7 +12,9 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 - Decisiones del usuario: `docs/planificacion.md` §1 (D-01 a D-08).
 - Preparación API integrada (`67f1802`, sesión `f4fcace13a274c7c96bc2f8388bbe954`): dependencias/runners sin fuente ni tests; todavía no hay rojo/verde.
 - Preparación móvil integrada (`21b8be5`, sesión `9ba161392a30429398acbe151078dcc8`): manifiestos/configs SDK 57, sin fuente ni tests.
-- **Siguiente acción:** test-writer escribe y comprueba el rojo de spec 001; el orquestador verifica antes de delegar implementación.
+- Rojo AC-01..AC-10 verificado: test-writer `68ed39c3af924cfcab2b7315bbd20aee`, commits `3883878` + `19f23b8`; API 21 tests (6 pass/15 fail), app 1 fail. RNTL 14 exige `await render` (corregido antes de verde); fixture temporal de prueba pasó. El orquestador reprodujo el rojo API y leyó logs.
+- **Siguiente acción:** api-dev implementa API/BD/scripts/CI sin tocar tests y se detiene; después mobile-dev implementa raíz/config/plugins.
+- Auditor de dependencias `e0ccbf941b504d23977c374cce13bb96` terminó lectura inicial. Se preguntó a Bryan por override `decode-uri-component@0.5.x` con ADR y aceptación de deuda restante; no hay respuesta todavía. No ejecutar downgrade mayor sugerido por npm audit.
 - Sesiones hijas en máquinas separadas, secuenciales en esta rama y con commits separados por rol. Fallback real disponible: SWE-2 Medium para desarrollo/tests/adversarial y SWE-2 High para reviewer; SOL/Luna siguen siendo las preferencias documentadas, no modelos ejecutados.
 
 ## Mapa del repo
