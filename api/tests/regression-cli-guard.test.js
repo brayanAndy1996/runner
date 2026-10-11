@@ -12,6 +12,9 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { run } from './helpers/proc.js';
 
 const apiDir = fileURLToPath(new URL('../', import.meta.url));
@@ -186,6 +189,48 @@ describe('001: ADV-001-F2 residual — use_env_variable con URL raíz en el CLI'
       RUNNER_SLASH_URL: 'postgres://x:x@127.0.0.1:1/runner_test',
       PGDATABASE: 'runner_dev',
     });
+    assert.notEqual(r.status, 0);
+    assert.match(r.output, /ECONNREFUSED|ConnectionRefusedError|connect/i);
+    assert.doesNotMatch(r.output, /Guardia de tests/);
+  });
+});
+
+describe('001: ADV-001-F2 residual — CLI desde cwd sin .sequelizerc', () => {
+  // Auditor F2-R verificado: desde un cwd temporal (sin .sequelizerc propio,
+  // por tanto SIN el preflight de guardia), `--config <api/src/db/config.js>
+  // --env development` carga nuestro config.js pero el CLI elige la entrada
+  // "development" (runner_dev) y llega a TCP. La guardia debe cortar el
+  // destino no-test elegido, no solo validar config.test. Bin local por path
+  // absoluto (npx en cwd temp descargaría el paquete de red).
+  const bin = fileURLToPath(
+    new URL('../node_modules/sequelize-cli/lib/sequelize', import.meta.url),
+  );
+  const configAbs = fileURLToPath(new URL('../src/db/config.js', import.meta.url));
+
+  /**
+   * @param {Record<string,string|undefined>} [extra]
+   * @returns {import('./helpers/proc.js').RunResult}
+   */
+  function cliSinRc(extra = {}) {
+    const cwd = mkdtempSync(join(tmpdir(), 'runner-cli-norc-'));
+    const env = /** @type {Record<string,string|undefined>} */ ({
+      ...process.env,
+      ...CLI_ENV,
+      ...extra,
+    });
+    return run(
+      process.execPath,
+      [bin, 'db:migrate:status', '--config', configAbs, '--env', 'development'],
+      { cwd, env, timeout: 30000 },
+    );
+  }
+
+  test('ADV-001-F2 residual: --env development + --config absoluto sin rc debe abortar (no ECONNREFUSED)', () => {
+    assertGuardAbort(cliSinRc(), 'CLI sin .sequelizerc --env development');
+  });
+
+  test('ADV-001-F2 residual: control — mismo comando con DB_NAME=runner_test llega a error de red SIN guardia', () => {
+    const r = cliSinRc({ DB_NAME: 'runner_test' });
     assert.notEqual(r.status, 0);
     assert.match(r.output, /ECONNREFUSED|ConnectionRefusedError|connect/i);
     assert.doesNotMatch(r.output, /Guardia de tests/);

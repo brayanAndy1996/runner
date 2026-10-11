@@ -122,6 +122,35 @@ describe('001: ADV-001 residual — database falsy explícito en replication', (
   });
 });
 
+describe('001: ADV-001 residual — URL multipath', () => {
+  // Defecto verificado offline: la guardia toma el PRIMER segmento del path
+  // ('runner_test') pero Sequelize/pg usan el path completo como database
+  // ('runner_test/runner_dev'), que NO termina en _test.
+  test('ADV-001-F1 residual: url /runner_test/runner_dev debe abortar (efectivo no es *_test)', () => {
+    const r = probe(
+      JSON.stringify({
+        url: 'postgres://x:x@127.0.0.1:1/runner_test/runner_dev',
+        dialect: 'postgres',
+      }),
+    );
+    assertGuardAbort(r, 'url multipath primer-segmento-_test');
+  });
+
+  test('ADV-001-F1 residual: control — url /runner_dev/runner_test (efectivo termina _test) es válida', () => {
+    const r = probe(
+      JSON.stringify({
+        url: 'postgres://x:x@127.0.0.1:1/runner_dev/runner_test',
+        dialect: 'postgres',
+      }),
+    );
+    if (r.status !== 0) {
+      assert.match(r.output, /_test/i, `abortó sin mencionar _test:\n${r.output}`);
+      return;
+    }
+    assert.match(r.output, /EFFECTIVE_DB=.*_test/, `efectivo debió terminar _test:\n${r.output}`);
+  });
+});
+
 describe('001: ADV-001 residual — env URL sin path desvía a PGDATABASE', () => {
   const NO_PATH_URL = 'postgres://x:x@127.0.0.1:1';
   const envNoPath = {
