@@ -40,8 +40,14 @@ jobs:
           PGPASSWORD=runner psql -h 127.0.0.1 -U runner -d runner_dev \
             -c 'CREATE DATABASE runner_test;'
 
+      # Instalar ambos paquetes antes de cualquier validación: la suite de
+      # api inspecciona app/ (ADV-001-F6).
       - name: api — instalar dependencias
         working-directory: api
+        run: npm ci
+
+      - name: app — instalar dependencias
+        working-directory: app
         run: npm ci
 
       - name: api — migrar runner_dev
@@ -68,10 +74,6 @@ jobs:
       - name: api — tests
         working-directory: api
         run: npm test
-
-      - name: app — instalar dependencias
-        working-directory: app
-        run: npm ci
 
       - name: app — lint
         working-directory: app

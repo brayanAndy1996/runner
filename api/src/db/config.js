@@ -1,7 +1,7 @@
 // Configuración Sequelize por entorno, consumida por sequelize-cli
 // (.sequelizerc apunta aquí) y por src/index.js. ESM: sequelize-cli la
 // carga con import dinámico; .sequelizerc sigue siendo CommonJS.
-import { resolveDatabaseName, assertTestDatabaseName } from './guard.js';
+import { assertTestTarget } from './guard.js';
 
 const base = {
   username: process.env.DB_USER ?? 'runner',
@@ -32,7 +32,7 @@ const config = {
 // esta config (sequelize-cli incluido) aborta antes de conectar si la BD de
 // test no termina en _test.
 if (process.env.NODE_ENV === 'test') {
-  assertTestDatabaseName(resolveDatabaseName(config.test));
+  assertTestTarget(config.test);
 }
 
 export default config;

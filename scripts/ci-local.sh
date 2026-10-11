@@ -6,6 +6,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Dependencias primero (ADV-001-F6): la suite de api inspecciona app/.
+for pkg in api app; do
+  (cd "$pkg" && npm ci)
+done
+
 bash scripts/db-up.sh
 
 (
