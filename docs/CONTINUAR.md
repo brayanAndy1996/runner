@@ -10,7 +10,8 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 
 - Planificación integrada en `main` con permiso de Bryan; spec 001 aprobada. Rama actual: `feat/001-andamiaje`. No hay permiso para mergear el andamiaje.
 - Decisiones del usuario: `docs/planificacion.md` §1 (D-01 a D-08).
-- **Siguiente acción:** api-dev y mobile-dev preparan dependencias sin funcionalidad; test-writer escribe y comprueba el rojo; el orquestador verifica antes de delegar implementación.
+- Preparación API integrada (`67f1802`, sesión `f4fcace13a274c7c96bc2f8388bbe954`): dependencias/runners sin fuente ni tests; todavía no hay rojo/verde.
+- **Siguiente acción:** mobile-dev prepara dependencias sin funcionalidad; test-writer escribe y comprueba el rojo; el orquestador verifica antes de delegar implementación.
 - Sesiones hijas en máquinas separadas, secuenciales en esta rama y con commits separados por rol. Fallback real disponible: SWE-2 Medium para desarrollo/tests/adversarial y SWE-2 High para reviewer; SOL/Luna siguen siendo las preferencias documentadas, no modelos ejecutados.
 
 ## Mapa del repo

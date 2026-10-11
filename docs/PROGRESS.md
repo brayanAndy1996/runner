@@ -38,6 +38,8 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Fallback de modelos: el selector de sesiones hijas solo expone SWE-2 Medium/High/Max, no SOL/Luna. Orquestador y reviewer: SWE-2 High; api-dev, mobile-dev, test-writer y adversarial-tester: SWE-2 Medium. No se afirma equivalencia de modelo ni coste con SOL/Luna.
 - Coordinación directa en sesiones aisladas, por etapas y sin escritores simultáneos en la misma rama. El workflow evaluado no expone los identificadores SWE-2 de este selector; las sesiones directas permiten seleccionar el fallback por rol y verificar el rojo personalmente antes del verde.
 - La autorización de arrancar spec 001 incluye sus supuestos de monorepo sin workspaces y CI sin build nativo. Los supuestos de otras specs no se dan por resueltos.
+- Preparación API verificada: sesión `f4fcace13a274c7c96bc2f8388bbe954`, commit `67f1802`; dependencias y runners disponibles, sin fuente ni tests. `npm test` ejecutó cero tests: no es evidencia de verde. Contrato propuesto: `createApp()` en `api/src/app.js`, configuración ESM en `api/src/db/config.js`, JS con JSDoc/checkJs. Se delega ahora preparación móvil.
+- Aviso de dependencia para auditoría adversarial: el api-dev reportó dos vulnerabilidades moderadas transitivas de `uuid` en Sequelize; pendiente de comprobación y decisión, sin aplicar cambios automáticos fuera del stack aprobado.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
