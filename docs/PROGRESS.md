@@ -6,7 +6,7 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 - **Fase:** spec 001 aprobada; preparación de dependencias antes de las pruebas rojas.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** sesiones hijas api-dev y mobile-dev preparan únicamente dependencias/configuración de pruebas; después test-writer cubre los AC antes de implementar.
+- **Siguiente acción:** test-writer cubre los AC y comprueba el rojo antes de implementar.
 
 ## Tabla de funcionalidades
 
@@ -40,6 +40,7 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - La autorización de arrancar spec 001 incluye sus supuestos de monorepo sin workspaces y CI sin build nativo. Los supuestos de otras specs no se dan por resueltos.
 - Preparación API verificada: sesión `f4fcace13a274c7c96bc2f8388bbe954`, commit `67f1802`; dependencias y runners disponibles, sin fuente ni tests. `npm test` ejecutó cero tests: no es evidencia de verde. Contrato propuesto: `createApp()` en `api/src/app.js`, configuración ESM en `api/src/db/config.js`, JS con JSDoc/checkJs. Se delega ahora preparación móvil.
 - Aviso de dependencia para auditoría adversarial: el api-dev reportó dos vulnerabilidades moderadas transitivas de `uuid` en Sequelize; pendiente de comprobación y decisión, sin aplicar cambios automáticos fuera del stack aprobado.
+- Preparación móvil verificada: sesión `9ba161392a30429398acbe151078dcc8`, commit `21b8be5`; SDK 57/RN 0.86.3/React 19.2.3, runners disponibles, sin fuente ni tests. `expo install --check` reportado conforme; cero tests todavía no constituye verde. Contrato: `app/src/app/index.tsx` con texto Runner y `_layout.tsx` para expo-router. La auditoría móvil reporta avisos transitivos, pendientes de evaluación adversarial.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
