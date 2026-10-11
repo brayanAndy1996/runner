@@ -12,7 +12,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { run } from './helpers/proc.js';
@@ -22,6 +22,7 @@ const bin = fileURLToPath(
   new URL('../node_modules/sequelize-cli/lib/sequelize', import.meta.url),
 );
 const configAbs = fileURLToPath(new URL('../src/db/config.js', import.meta.url));
+const rcAbs = fileURLToPath(new URL('../.sequelizerc', import.meta.url));
 
 const CLI_ENV = {
   NODE_ENV: 'test',
@@ -227,5 +228,39 @@ describe('001: ADV-001-F2-R5 — rc que precarga config.js (ciclo parcial)', () 
       cli(apiDir, ['--options-path', preloadRc('test'), '--env', 'development']),
       'preload test + flag --env development',
     );
+  });
+
+  test('cobertura GREEN — rc que precarga .sequelizerc fuerza fail-closed (env ambiguo)', () => {
+    // Distinto del fixture que precarga config.js: aquí el rc externo hace
+    // require del .sequelizerc PROPIO mientras sus exports aún son {}. El
+    // preflight reentra, no puede resolver el env del rc en carga y debe
+    // fallar cerrado (RC_ENV_AMBIGUOUS) → aborto _test antes de la red.
+    const dir = mkdtempSync(join(tmpdir(), 'runner-cli-rc5s-'));
+    const rcPath = join(dir, 'rc.cjs');
+    writeFileSync(
+      rcPath,
+      `require(${JSON.stringify(rcAbs)});\n` +
+        `module.exports = ${JSON.stringify({ config: configAbs, env: 'development' })};\n`,
+    );
+    const r = cli(apiDir, ['--options-path', rcPath]);
+    assertGuardAbort(r, 'rc precargando .sequelizerc');
+    // Orden export-first: los exports ya están completos cuando el rc
+    // require'a el .sequelizerc propio → el env rc SÍ se resuelve
+    // ('development') y la guardia aborta por destino dev. Ambos órdenes
+    // deben terminar en aborto seguro, nunca en TCP.
+    const dir2 = mkdtempSync(join(tmpdir(), 'runner-cli-rc5e-'));
+    const rcPath2 = join(dir2, 'rc.cjs');
+    writeFileSync(
+      rcPath2,
+      `module.exports = ${JSON.stringify({ config: configAbs, env: 'development' })};\n` +
+        `require(${JSON.stringify(rcAbs)});\n`,
+    );
+    assertGuardAbort(cli(apiDir, ['--options-path', rcPath2]), 'rc export-first');
+    // Control: un symlink al MISMO rc precargador conserva el fail-closed
+    // (realpath en require.cache no desambigüa el env aún-en-carga).
+    const linkDir = mkdtempSync(join(tmpdir(), 'runner-cli-rc5l-'));
+    const linkPath = join(linkDir, 'rc-link.cjs');
+    symlinkSync(rcPath, linkPath);
+    assertGuardAbort(cli(apiDir, ['--options-path', linkPath]), 'symlink al rc precargador');
   });
 });
