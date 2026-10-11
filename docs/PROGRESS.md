@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** tercer fix con pipeline y CI verdes; re-test adversarial en curso. No cumple DoD todavía.
+- **Fase:** cuarto fix verificado: pipeline, cobertura y CI verdes; re-test adversarial sin críticos ni altos abiertos. Revisión independiente y decisiones pendientes; no cumple DoD todavía.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** recibir el re-test adversarial del tercer fix; resolver los hallazgos nuevos con rojo previo si aparecen. Obtener decisiones de dependencias y deuda antes del reviewer.
+- **Siguiente acción:** reviewer independiente revisa diff y evidencias; resolver con Bryan las decisiones de dependencias/deuda antes de `APROBADO` y PR.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | tercer fix verde local/remoto; pendientes adversarial, decisiones y reviewer |
+| 001 | Andamiaje | cuarto fix verde y sin altos; decisiones y reviewer pendientes |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -72,9 +72,22 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Orquestador reprodujo `scripts/ci-local.sh` desde entorno sin `NODE_ENV`, `DB_NAME`, `DATABASE_URL` ni `PGDATABASE` heredados: exit 0, migraciones dev/test, API 121/121, app 2/2, lint y typecheck de ambos. Permanece el warning móvil `import/first` en el test del layout.
 - CI remoto comprobado directamente por SHA: https://github.com/brayanAndy1996/runner/actions/runs/38162896849 — `completed/success` para `bcc9341`. El rojo anterior `269f4e7` falló en CI; no se confunden ambos estados.
 - Cobertura API medida por el orquestador con todas las fuentes funcionales (`src/**`, `migrations/**`, `.sequelizerc`): 99,50 % líneas / 86,90 % ramas / 100 % funciones global. `guard.js`: 99,04/86,67/100; `config.js` e `index.js`: 100/50/100; `.sequelizerc`, fábrica, health y migración: 100 % en todas las métricas. App, incluyendo raíz y layout: 100 % en todas las métricas, 2/2 tests. No se alteró la instrumentación.
-- Re-test adversarial de `bcc9341` delegado a `e0ccbf941b504d23977c374cce13bb96`: auditoría offline de los dos altos y variantes equivalentes; aún sin veredicto. La guardia no cubre invocaciones externas que omiten cargar código propio; la política de esa frontera sigue pendiente.
+- Re-test adversarial de `bcc9341` finalizado por `e0ccbf941b504d23977c374cce13bb96`: F3-R3 y F2-R3 cerrados; nuevo alto F2-R4, alias camelCase de yargs `--optionsPath` y `--optionsPath=…`. El CLI lee ese rc y selecciona `development` mientras la guardia solo reconoce `--options-path` y valida `test`. El orquestador reprodujo ambas formas a `127.0.0.1:1`, sin acceso a `runner_dev`; kebab inseguro aborta y el control camel con `--env test` selecciona test.
+- Flags duplicados de env/config/url descartados como altos: el CLI falla antes de conectar. Ignorar el rc versionado para evitar el ciclo queda como limitación de diseño, sin vector actual mientras no se modifique ese archivo. La guardia tampoco cubre invocaciones externas que omiten cargar código propio; la política de esa frontera sigue pendiente.
+- Test-writer entregó `c531436040a986293f1af500954bd169757f6bad`, únicamente tests: dos regresiones F2-R4, controles seguros y cobertura de rc/entorno, más corrección del warning `import/first` móvil sin cambiar el mock. Orquestador reprodujo el rojo completo: API 129 tests, 127 pass / 2 fail exclusivamente por el alias camelCase; API-dev corrige solo producción. No se cambiaron dependencias.
 - Decisiones móviles aún **sin autorización**: override `decode-uri-component@0.5.x`, pin `test-renderer@~1.2.0`, alineación Reanimated/Worklets con Expo 57 (4.5.1/0.10.1 frente a transitivas instaladas 4.7.1/0.13.0), ADR y deuda de advisories restantes. `expo install --check` no valida esa diferencia transitiva ni sustituye un build nativo. No se ejecutó `npm audit fix`.
 - No se ha emitido revisión `APROBADO`, publicado el PR de andamiaje ni autorizado su merge. Los bajos/medios adversariales y la frontera del CLI externo sin código propio cargado requieren decisión explícita; no figuran como deuda aceptada.
+
+### Checkpoint del cuarto fix (2026-10-11)
+
+- Rojo F2-R4 confirmado sobre `c531436`: 129 tests API, 127 pass y 2 fail exclusivos de `--optionsPath` separado y con `=`.
+- API-dev entregó `5174dae12a41ce2799bbea7a3d8fc8b85318a148`; diff comprobado por el orquestador: únicamente `api/src/db/guard.js`, sin tests/fixtures/dependencias/CI/docs. El helper acepta el alias camelCase de los flags kebab-case, ambas formas separado/igual, sin cambiar la precedencia de entorno ni agregar dependencias.
+- Orquestador reprodujo `db-up.sh` dos veces sin eliminar contenedor/volumen y `ci-local.sh` desde entorno sin variables heredadas: migraciones dev/test, API 129/129, app 2/2, lint y typecheck verdes y sin warnings.
+- Cobertura API medida incluyendo explícitamente `src/**`, `migrations/**` y `.sequelizerc`: 100 % líneas / 93,14 % ramas / 100 % funciones global; `guard.js` 100/94,87/100, `config.js` e `index.js` 100/50/100, resto funcional 100 % en todas las métricas. App raíz/layout 100 % en todas las métricas y 2/2 tests. No se excluyeron fuentes funcionales ni se cambió instrumentación.
+- CI remoto comprobado por SHA: https://github.com/brayanAndy1996/runner/actions/runs/38163789180 — `completed/success` para `5174dae`. No se confunde con el CI rojo de regresiones ni con la revisión adversarial.
+- Re-test de `e0ccbf941b504d23977c374cce13bb96` terminado sobre `5174dae`, únicamente lectura/probes offline a puerto 1: **cero críticos/altos abiertos**. F2-R4 cerrado en ambas formas del alias; controles seguros, precedencias y regresiones R1–R3 re-verificados. No conectó ni autenticó contra `runner_dev`, ni modificó fuentes/tests/dependencias.
+- Auditoría npm actual de app: 53 altas / 16 moderadas propagadas, correspondientes a cinco advisories hoja; no hay críticas. Continúan pendientes los cambios móviles, ADR y aceptación explícita de deuda. No se ejecutó `npm audit fix` ni se autorizaron cambios por omisión.
+- Bajos F5 (factory por convención), F8 (`NODE_ENV=test` exacto), F9 (readiness/puerto), frontera del CLI sin código propio y notas F11 (Google iOS futuro), F7/F12 (rechazos seguros) no equivalen a altos abiertos; tampoco están aceptados como deuda. El reviewer verificará código/logs y emitirá `BLOQUEADO` si faltan decisiones, nunca un `APROBADO` condicional.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 

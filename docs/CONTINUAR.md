@@ -24,12 +24,18 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 - Tercer fix integrado `bcc934168889b16c40dc1079363a36949bb9c3bb`: solo producción (`guard.js`, `config.js`, `.sequelizerc`). Comprueba `database` propia/heredada y resuelve entorno CLI `--env > rc.env > NODE_ENV`, evitando el ciclo del rc propio. Orquestador verificó diff y pipeline completo: migraciones dev/test, API121/121, app2/2, lint/typecheck exit0; warning móvil `import/first` existente.
 - CI remoto comprobado directamente para `bcc9341`: https://github.com/brayanAndy1996/runner/actions/runs/38162896849 — `completed/success`. No constituye cierre adversarial ni aprobación de reviewer.
 - Cobertura del tercer fix medida por orquestador, API incluyendo `src/**`, `migrations/**` y `.sequelizerc`: 99,50 % líneas / 86,90 % ramas / 100 % funciones global; guard99,04/86,67/100, config e index100/50/100, resto funcional100. App raíz y layout100 % todas las métricas, 2/2. No se excluyeron módulos funcionales ni se cambió la instrumentación.
-- **Siguiente acción:** recibir re-test adversarial de `bcc9341` (`e0ccbf941b504d23977c374cce13bb96`, en curso); si encuentra defectos reales, convertirlos en rojos por test-writer antes de API-dev. Obtener decisiones de deuda/dependencias con Bryan antes de reviewer APROBADO/PR.
+- Re-test de `bcc9341` cerrado: F3-R3/F2-R3 corregidos, un alto F2-R4 abierto. yargs acepta `--optionsPath`/`--optionsPath=…`; nuestra lectura del rc solo reconoce `--options-path`. Con rc env development y config propio cargado, ambos aliases esquivan la guardia. Orquestador reprodujo a puerto 1 sin acceso a dev real; kebab inseguro aborta, camel más `--env test` selecciona test. Duplicados env/config/url descartados por fallar antes de conectar.
+- Cuarto rojo entregado por test-writer en `c531436040a986293f1af500954bd169757f6bad`, solo tests: dos aliases camelCase inseguros, controles seguros, cobertura cliRcObject/cliEffectiveEnv y warning import/first móvil corregido. Orquestador reprodujo API129tests127pass2fail, exclusivamente F2-R4. No se cambiaron fixtures de producción, dependencias ni instrumentación.
+- Cuarto fix integrado `5174dae12a41ce2799bbea7a3d8fc8b85318a148`, API-dev: únicamente `api/src/db/guard.js`, acepta camelCase de flags kebab-case separado/con `=`. Orquestador verificó diff sin tests/deps y reprodujo db-up dos veces, pipeline completo con migraciones dev/test, API129/129, app2/2, lint/typecheck sin warnings.
+- Cobertura actual API, incluyendo `src/**`, `migrations/**`, `.sequelizerc`: 100 % líneas / 93,14 % ramas / 100 % funciones global; guard100/94,87/100, config/index100/50/100, resto funcional100. App raíz/layout100 % todas las métricas. No se cambió instrumentación.
+- CI del cuarto fix comprobado por SHA: https://github.com/brayanAndy1996/runner/actions/runs/38163789180 — `completed/success` para `5174dae`.
+- Re-test final `e0ccbf941b504d23977c374cce13bb96` terminado sobre `5174dae`: **cero críticos/altos abiertos**, F2-R4 cerrado en ambas formas y resto de regresiones/controles re-verificados offline. Sin conexiones/autenticación a `runner_dev`, cambios de repo ni aceptación implícita de bajos/deuda.
+- **Siguiente acción:** reviewer independiente revisa código/logs; resolver decisiones con Bryan antes de `APROBADO` y PR. No hay autorización para cambios de dependencias, aceptar deuda ni merge. Bajos F5/F8/F9, frontera CLI y notas F11/F7/F12 siguen pendientes, no altos abiertos.
 - Auditor verificó además RNTL14 → test-renderer1.3/reconciler0.34 incompatible por peer con React19.2. Tabla oficial recomienda pin test-renderer1.2. Se añadió a la pregunta pendiente a Bryan; NO cambiar dependencias sin ADR/aprobación.
 - Auditor de dependencias `e0ccbf941b504d23977c374cce13bb96` terminó lectura inicial. Se preguntó a Bryan por override `decode-uri-component@0.5.x` con ADR y aceptación de deuda restante; no hay respuesta todavía. No ejecutar downgrade mayor sugerido por npm audit.
 - Reanimated/Worklets transitivas instaladas (4.7.1/0.13.0) difieren de la matriz Expo57 (4.5.1/0.10.1); la alineación también está pendiente de autorización y ADR. `expo install --check` dio conforme pero no validó esa combinación transitiva ni un build nativo.
 - La aprobación del entorno Node24/instalaciones incrementales no autoriza cambios de dependencias. Ningún medio/bajo ni frontera del CLI externo se da por deuda aceptada.
-- Aún no hay reviewer `APROBADO` ni PR de andamiaje. Repetir pipeline, cobertura, adversarial y CI sobre el fix final; después reviewer independiente y DoD/documentación. Publicar PR solo al cumplir las puertas; nunca mergear sin nueva autorización.
+- Aún no hay reviewer `APROBADO` ni PR de andamiaje. El cuarto fix tiene pipeline, cobertura, CI y cierre adversarial comprobados; faltan decisiones pendientes y revisión independiente/DoD. Publicar PR solo al cumplir las puertas; nunca mergear sin nueva autorización.
 - Sesiones hijas en máquinas separadas, secuenciales en esta rama y con commits separados por rol. Fallback real disponible: SWE-2 Medium para desarrollo/tests/adversarial y SWE-2 High para reviewer; SOL/Luna siguen siendo las preferencias documentadas, no modelos ejecutados.
 
 ## Mapa del repo
@@ -38,7 +44,7 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 app/        Expo SDK 57 + TS + expo-router + dev-client; raíz Runner y layout Stack
 api/        Express 5 + Sequelize 6 + Postgres 16, ESM; health/config/factory/guardia
 docs/       metodología completa: planificacion (R-xx, D-xx), agents, specs NNN, decisions, api/openapi.yaml, PROGRESS, CONTINUAR
-scripts/    db-up.sh, ci-local.sh (pipeline y CI verdes en bcc9341; pendiente cierre adversarial)
+scripts/    db-up.sh, ci-local.sh (pipeline y CI verdes en 5174dae; adversarial sin críticos/altos)
 CONSTITUCION.md  stack exacto, comandos, convenciones, DoD
 ```
 
