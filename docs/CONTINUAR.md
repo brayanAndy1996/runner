@@ -14,7 +14,8 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 - [CI #34](https://github.com/brayanAndy1996/runner/actions/runs/38167987998) **completed successfully** para `bcad321`; [CI #35](https://github.com/brayanAndy1996/runner/actions/runs/38169073386) **completed/success** para el checkpoint `7bfc38f`. Auditoría adversarial independiente: **cero críticos/altos abiertos**.
 - Audit final `--prefer-online`: API 2 moderadas; app 13 moderadas/51 altas/0 críticas (64 entradas incluyendo ancestros), mismas cuatro hojas aceptadas en ADR 0002. Snapshot previo 66: dos ancestros peer de RN adicionales, no advisory nuevo ni arreglo de seguridad. `decode-uri-component@0.5.0` corregido; renderer1.2/reconciler0.33 y Reanimated4.5.1/Worklets0.10.1 verificados en instalación/Expo check, no en build nativo.
 - **Reviewer y DoD:** el [reviewer independiente](https://app.devin.ai/sessions/8f8f993fe14e471391a07d00a7be688f) SWE-2 High emitió `APROBADO` literal sobre `7bfc38f` tras leer código/logs y reproducir F2-R5/controles y verificaciones reales. El orquestador cerró DoD: 10/10 AC nombrados, pruebas/lint/typecheck, cobertura, adversarial, contrato OpenAPI y estos dos documentos. El `BLOQUEADO` anterior corresponde solo a la revisión histórica.
-- **Siguiente paso:** publicar y revisar PR desde `feat/001-andamiaje`. No hay permiso de merge a `main`; solicitarlo explícitamente después de la revisión de Bryan.
+- **PR actual:** [#2 — Andamiaje API y app](https://github.com/brayanAndy1996/runner/pull/2), abierto desde `feat/001-andamiaje` hacia `main`.
+- **Siguiente paso:** esperar revisión de Bryan. No hay permiso de merge a `main`; solicitarlo explícitamente después de su revisión.
 - Deuda aceptada exclusivamente por ADR 0002–0004; los supuestos de specs 002–011 siguen pendientes. No arrancar 002 ni dar por implementados tracking, auth o media.
 
 ## Historial anterior (no representa los pendientes actuales)

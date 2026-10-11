@@ -6,13 +6,14 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 - **Fase:** spec 001 implementada en la rama; siete puntos H-02 aplicados y revalidados, auditoría adversarial sin críticos/altos abiertos, reviewer independiente `APROBADO` y DoD verificado. La rama está lista para revisión mediante PR, no para merge sin permiso nuevo.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** publicar el PR de andamiaje y esperar la decisión de Bryan. No arrancar spec 002 ni fusionar el andamiaje por inferencia.
+- **PR:** [#2 — Andamiaje API y app](https://github.com/brayanAndy1996/runner/pull/2), abierto contra `main`, sin merge.
+- **Siguiente acción:** esperar revisión de Bryan y autorización explícita para el merge de ese PR. No arrancar spec 002 ni fusionar el andamiaje por inferencia.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | Implementada en rama; reviewer `APROBADO` y DoD verificado; lista para revisión en PR, merge no autorizado |
+| 001 | Andamiaje | Implementada en rama; reviewer `APROBADO` y DoD verificado; [PR #2](https://github.com/brayanAndy1996/runner/pull/2) abierto hacia `main`, merge no autorizado |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -129,7 +130,7 @@ Se aplicó el paquete: ajustes compatibles de los puntos 1–3 (ADR 0001), deuda
 - **AC-01…AC-10:** conservan pruebas nombradas; AC-01/03/07 suplementados por Docker/migraciones/pipeline reales y AC-08 por el CI remoto. OpenAPI sigue sincronizado con `GET /health`.
 - **Reviewer independiente:** [revisión final spec 001](https://app.devin.ai/sessions/8f8f993fe14e471391a07d00a7be688f) sobre `7bfc38f` emitió **APROBADO** literal y sin condiciones tras leer código/logs y reproducir AC-01/03/07, F2-R5 y controles sin conectar a `runner_dev`. Su `BLOQUEADO` anterior sobre `5edacf4` es histórico. Comprobó [CI #35](https://github.com/brayanAndy1996/runner/actions/runs/38169073386) para `7bfc38f`: `completed/success`.
 - **DoD verificado por el orquestador:** API 135/135 y app 2/2, lint/typecheck ambos; cobertura API 100 % líneas/93,20 % ramas/100 % funciones y app 100 %; AC-01…AC-10 con test nombrado; sin crítico/alto adversarial abierto; reviewer `APROBADO`; OpenAPI coincide con `/health`; PROGRESS/CONTINUAR al día. La auditoría npm aún reporta los avisos aceptados estrictamente por ADR 0002; no se confunden con el veredicto adversarial.
-- **Siguiente hito:** publicar PR desde `feat/001-andamiaje` y pedir revisión de Bryan. Nada de tracking/auth/media, builds nativos, EAS ni pruebas UI se da por implementado o verificado. Ningún permiso de merge.
+- **PR publicado:** [#2](https://github.com/brayanAndy1996/runner/pull/2), `feat/001-andamiaje` → `main`, para revisión de Bryan. Nada de tracking/auth/media, builds nativos, EAS ni pruebas UI se da por implementado o verificado. Ningún permiso de merge.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
