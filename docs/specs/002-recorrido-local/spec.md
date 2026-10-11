@@ -12,7 +12,8 @@ Grabar recorridos a pie sin cuenta: iniciar/pausar/reanudar/finalizar, métricas
 
 ## Decisiones técnicas
 
-- **Dominio puro** en `app/src/domain/tracking/`: `appendPoint`, `computeDistance` (haversine), `computePace`, `estimateCalories` (fórmula MET caminar/correr; peso por defecto 70 kg [SUPUESTO — perfil configurable en spec 005]), agregaciones por intervalos. TypeScript puro, sin imports nativos → tests de propiedades.
+- **Dominio puro** en `app/src/domain/tracking/`: `appendPoint`, `computeDistance` (haversine), `computePace`, `estimateCalories` (fórmula MET caminar/correr), agregaciones por intervalos. TypeScript puro, sin imports nativos → tests de propiedades.
+- **Estimación de calorías (D-08):** `estimateCalories(points, profile)` recibe `profile: { weightKg, sex, heightCm }` (peso es el factor principal de la fórmula MET; sexo y altura ajustan la tasa basal usada como corrección [SUPUESTO — fórmula concreta se fija en el encargo de implementación y queda documentada en el ADR correspondiente]). Si el perfil local no tiene estos datos, se usa el default `weightKg=70` con `sex/height` neutros y se indica en UI que la estimación es genérica.
 - **Almacén local:** expo-sqlite con tablas `routes` (id uuid, started_at, ended_at, status, distance_m, duration_s, calories, pace_avg, polyline GeoJSON string, visibility 'private', synced_at null) y `route_points` (route_id, seq, lat, lng, altitude, accuracy, recorded_at). Polyline como GeoJSON LineString derivado de `route_points`. [SUPUESTO]
 - **Background:** `expo-location` `startLocationUpdatesAsync` + `expo-task-manager`; foreground service Android con notificación persistente e indicador iOS (R-08, RNF-05).
 - **Filtro de puntos:** descartar fixes con `accuracy > 30 m` y saltos de velocidad > 40 km/h (ruido GPS). [SUPUESTO]

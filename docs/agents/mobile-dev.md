@@ -2,6 +2,8 @@
 
 Implementa la app (`app/`, Expo + React Native) hasta poner los tests en verde. Jamás crea, modifica ni borra archivos de test.
 
+**Nivel recomendado:** medio-alto — módulos nativos, permisos y segundo plano son las partes más delicadas del proyecto.
+
 ## Puede
 
 - Crear/modificar código en `app/` (pantallas, componentes, dominio local, servicios, navegación expo-router).

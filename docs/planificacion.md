@@ -14,6 +14,7 @@ Este documento es la fuente de verdad de los requerimientos. Las reglas R-xx no 
 | D-02 | Plataformas: Android e iOS desde el inicio. |
 | D-03 | Fase 2 social: grupos donde se puede crear eventos y publicaciones. Nada más (sin likes/comentarios por ahora). |
 | D-04 | La función básica (no social) funciona sin registro. Registro por email+contraseña o directo con Google/Apple. |
+| D-08 | El perfil incluye peso, sexo y altura para estimar calorías quemadas. También editable en modo local (sin cuenta). |
 | D-05 | Media en disco local del api durante desarrollo; un tercero (Cloudflare R2 u otro) para producción. |
 | D-06 | El recorrido debe poder grabarse en segundo plano (pantalla apagada). |
 | D-07 | Recorridos privados por defecto, con opción explícita de publicar. |
@@ -47,6 +48,7 @@ Este documento es la fuente de verdad de los requerimientos. Las reglas R-xx no 
 - **HU-04** Como usuario, quiero ver en el inicio mis pasos de hoy y mi resumen de la semana/mes.
 - **HU-05** Como usuario, quiero tomar fotos y videos durante el recorrido que queden ligados al trayecto y al lugar.
 - **HU-06** Como usuario nuevo, quiero registrarme con email o con Google/Apple y conservar mis recorridos locales.
+- **HU-12** Como usuario, quiero registrar mi peso, sexo y altura para que la app estime las calorías que quemo.
 - **HU-07** Como usuario registrado, quiero ver a las personas de mi ciudad, sus recorridos públicos y los lugares que conocieron.
 - **HU-08** Como usuario, quiero un tab de explorar donde el mapa muestre lo recorrido por otros junto a sus fotos.
 - **HU-09** Como usuario, quiero compartir la imagen de mi recorrido con marca de agua en otras redes sociales.
@@ -62,7 +64,7 @@ Este documento es la fuente de verdad de los requerimientos. Las reglas R-xx no 
 | RF-03 | Persistencia local de recorridos (SQLite) y su modelo de dominio puro | 002 |
 | RF-04 | Render del recorrido en MapLibre: polyline estilizada, marcadores inicio/fin, vista detalle | 003 |
 | RF-05 | Inicio: pasos del día (podómetro) + resumen semana/mes (km, tiempo, rutas, calorías) | 004 |
-| RF-06 | Auth: email+contraseña JWT y Google/Apple; perfil con nombre, ciudad, avatar, bio | 005 |
+| RF-06 | Auth: email+contraseña JWT y Google/Apple; perfil con nombre, ciudad, avatar, bio, peso, sexo, altura | 005 |
 | RF-07 | Sincronización: reclamar recorridos/media locales a la cuenta; api de recorridos | 005 |
 | RF-08 | Captura foto/video en el momento ligada a recorrido + posición; flag dev de galería; subida al api | 006 |
 | RF-09 | Visibilidad por recorrido (privado/público) aplicada en api y app | 005, 007 |

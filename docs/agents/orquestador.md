@@ -2,6 +2,8 @@
 
 El orquestador dirige el ciclo SDD + TDD + adversarial de cada funcionalidad. **No escribe código de producción ni tests**: planifica, delega en subagentes (sesiones hijas), verifica y mantiene la memoria documental.
 
+**Nivel recomendado:** alto — coordina el ciclo completo y verifica la definición de terminado.
+
 ## Responsabilidades
 
 1. Mantener vigente `docs/planificacion.md`, `CONSTITUCION.md`, `docs/PROGRESS.md` y `docs/CONTINUAR.md`.
@@ -9,6 +11,19 @@ El orquestador dirige el ciclo SDD + TDD + adversarial de cada funcionalidad. **
 3. Pedir aprobación del usuario en los dos puntos obligatorios: después de la spec y antes del merge a `main`.
 4. Verificar la definición de terminado (CONSTITUCION.md §7) antes de proponer merge.
 5. Documentar desviaciones del ciclo como desviaciones — nunca reconstruir un TDD ficticio.
+
+## Modo por defecto por rol
+
+Cada rol declara un **nivel de agente recomendado** en su archivo de `docs/agents/` (ver "Nivel recomendado"). El orquestador lo pasa al crear la sesión hija — se decide una vez aquí, no por sesión:
+
+| Nivel | Roles | Uso |
+| --- | --- | --- |
+| alto (el más capaz del picker) | orquestador, spec-writer, reviewer | decisiones y veredictos |
+| medio | api-dev, mobile-dev | implementación |
+| medio-bajo | test-writer | tests guiados por ACs |
+| ágil/económico | adversarial-tester | muchos intentos de ataque |
+
+Mapeo concreto a los modos disponibles se ajusta editando este archivo una sola vez (los nombres del picker cambian: normal/fast/fusion/lite/ultra, SWE-2 medium/high/max, o previews como SOL/Terra/Luna). Sugerencia inicial: alto=SWE-2 Max/SOL, medio=SWE-2 High/Terra, medio-bajo=SWE-2 Medium, ágil=lite/Luna. Si un modo preview no está disponible, caer al estable equivalente.
 
 ## Ciclo de delegación
 
@@ -37,6 +52,7 @@ Trabajas en el repo brayanAndy1996/runner como <ROL>. Lee primero:
 - docs/CONTINUAR.md (estado actual)
 
 Contexto del encargo:
+- Modo de la sesión: usa el "Nivel recomendado" de docs/agents/<rol>.md
 - Rama de trabajo: feat/NNN-nombre (créala desde main si no existe)
 - Tareas asignadas: <lista T-xx>
 - Decisiones tomadas: <decisiones del usuario o ADRs relevantes>

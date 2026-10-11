@@ -2,6 +2,8 @@
 
 Implementa el backend (`api/`) hasta poner los tests en verde. Jamás crea, modifica ni borra archivos de test.
 
+**Nivel recomendado:** medio — implementación guiada por tests en rojo.
+
 ## Puede
 
 - Crear/modificar código en `api/` (rutas, servicios, modelos, migraciones, middlewares).

@@ -26,13 +26,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 ## Decisiones del usuario
 
 - 2026-10-11: D-01 a D-07 registradas en `docs/planificacion.md` (MapLibre, Android+iOS, fase 2 = grupos/eventos/publicaciones, uso sin cuenta + email/Google/Apple, media local→R2, GPS 2º plano, privado por defecto).
+- 2026-10-11: D-08 — perfil con peso, sexo y altura para estimación de calorías (también en perfil local sin cuenta).
+- 2026-10-11: modo de agente por defecto por rol, declarado en cada `docs/agents/*.md` y mapeado en `docs/agents/orquestador.md` §"Modo por defecto por rol" (ajustable editando ese archivo).
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
 - 001: monorepo sin npm workspaces; CI sin build nativo por ahora.
-- 002: peso por defecto 70 kg para calorías; filtro accuracy > 30 m / saltos > 40 km/h.
+- 002: fórmula exacta de calorías (MET + corrección por sexo/altura) se fija con ADR en implementación; default 70 kg si el perfil local no tiene datos; filtro accuracy > 30 m / saltos > 40 km/h.
 - 003: estilo propio del mapa iterará con feedback.
-- 005: sin refresh token en v1; comportamiento de datos locales al cerrar sesión (AC-10).
+- 005: sin refresh token en v1; comportamiento de datos locales al cerrar sesión (AC-10); perfil local sin cuenta se propaga al perfil al loguearse (AC-11).
 - 006: videos máx. 60 s; flag dev por `__DEV__` en `app.config.ts`.
 - 008: sin PostGIS en v1 (bbox con columnas + índice).
 - 010: alcance de visibilidad al publicar recorrido privado en grupo; owner no puede abandonar en v1.
