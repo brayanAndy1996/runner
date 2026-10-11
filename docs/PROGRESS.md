@@ -1,0 +1,45 @@
+# PROGRESS — Runner
+
+Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del ciclo.
+
+## Estado actual
+
+- **Fase:** planificación aprobada → siguiente: ciclo de spec 001 (andamiaje).
+- **Siguiente acción:** el usuario revisa/aprueba las specs en el PR inicial; aprobada spec 001, se abre `feat/001-andamiaje`.
+
+## Tabla de funcionalidades
+
+| NNN | Funcionalidad | Estado |
+| --- | --- | --- |
+| 001 | Andamiaje | spec propuesta |
+| 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
+| 003 | Mapa del recorrido (MapLibre) | spec propuesta |
+| 004 | Inicio runner (podómetro + resumen) | spec propuesta |
+| 005 | Auth, perfil y sincronización | spec propuesta |
+| 006 | Fotos/videos en el momento | spec propuesta |
+| 007 | Comunidad por ciudad | spec propuesta |
+| 008 | Explorar (tab social) | spec propuesta |
+| 009 | Compartir con marca de agua | spec propuesta |
+| 010 | Grupos, eventos y publicaciones (fase 2) | spec propuesta |
+| 011 | Media en Cloudflare R2 (producción) | spec propuesta |
+
+## Decisiones del usuario
+
+- 2026-10-11: D-01 a D-07 registradas en `docs/planificacion.md` (MapLibre, Android+iOS, fase 2 = grupos/eventos/publicaciones, uso sin cuenta + email/Google/Apple, media local→R2, GPS 2º plano, privado por defecto).
+- 2026-10-11: D-08 — perfil con peso, sexo y altura para estimación de calorías (también en perfil local sin cuenta).
+- 2026-10-11: modo de agente por rol fijado — alto: GPT-sol 6.1 high (orquestador, spec-writer, reviewer); medio y medio-bajo: GPT-sol 6.1 medium (api-dev, mobile-dev, test-writer); ágil: GPT-6 luna max (adversarial-tester). Mapeo en `docs/agents/orquestador.md`.
+
+## Supuestos abiertos (penden de confirmación del usuario)
+
+- 001: monorepo sin npm workspaces; CI sin build nativo por ahora.
+- 002: fórmula exacta de calorías (MET + corrección por sexo/altura) se fija con ADR en implementación; default 70 kg si el perfil local no tiene datos; filtro accuracy > 30 m / saltos > 40 km/h.
+- 003: estilo propio del mapa iterará con feedback.
+- 005: sin refresh token en v1; comportamiento de datos locales al cerrar sesión (AC-10); perfil local sin cuenta se propaga al perfil al loguearse (AC-11).
+- 006: videos máx. 60 s; flag dev por `__DEV__` en `app.config.ts`.
+- 008: sin PostGIS en v1 (bbox con columnas + índice).
+- 010: alcance de visibilidad al publicar recorrido privado en grupo; owner no puede abandonar en v1.
+- 011: adapter de storage + redirect a URL firmada ≤ 15 min.
+
+## Deuda técnica
+
+- (vacía)
