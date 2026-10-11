@@ -22,11 +22,12 @@ describe('001: scripts/ci-local.sh', () => {
     const fake = makeFakeBin();
     const r = run('bash', [scriptPath], { cwd: repoRoot, env: fake.env, timeout: 120000 });
     const log = readFileSync(fake.npmLog, 'utf8');
+    const lines = log.split('\n').map((l) => l.trim()).filter(Boolean);
     for (const pkg of ['api', 'app']) {
       for (const cmd of ['run lint', 'run typecheck', 'test']) {
-        assert.match(
-          log,
-          new RegExp(`npm ${cmd}[^\\n]*@ [^\\n]*/${pkg}/?$`),
+        const expected = new RegExp(`^npm ${cmd} @ .*/${pkg}/?$`);
+        assert.ok(
+          lines.some((line) => expected.test(line)),
           `ci-local.sh debe ejecutar "npm ${cmd}" en ${pkg}/:\n${log}\n${r.output}`,
         );
       }
