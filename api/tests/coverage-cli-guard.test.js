@@ -243,6 +243,33 @@ describe('001: config.js selecciona la entrada del argv', () => {
     });
     assert.equal(ok.status, 0, ok.output);
   });
+  test('defaults sin DB_*: host 127.0.0.1, puerto 5432, database runner_test, username runner', () => {
+    const r = loadConfig([], {
+      DB_HOST: undefined,
+      DB_PORT: undefined,
+      DB_NAME: undefined,
+      DB_USER: undefined,
+      DB_PASSWORD: undefined,
+    });
+    assert.equal(r.status, 0, r.output);
+    assert.match(
+      r.output,
+      /TEST_ENTRY=\{.*"database":"runner_test".*"host":"127\.0\.0\.1".*"port":5432.*"username":"runner".*"dialect":"postgres"/s,
+    );
+  });
+  test('overrides DB_* se aplican a la entrada test', () => {
+    const r = loadConfig(['--env', 'test'], {
+      DB_HOST: '10.0.0.9',
+      DB_PORT: '5544',
+      DB_NAME: 'otra_test',
+      DB_USER: 'otro',
+    });
+    assert.equal(r.status, 0, r.output);
+    assert.match(r.output, /"database":"otra_test"/);
+    assert.match(r.output, /"host":"10\.0\.0\.9"/);
+    assert.match(r.output, /"port":5544/);
+    assert.match(r.output, /"username":"otro"/);
+  });
   test('--url salta la selección de entrada: dev aborta, _test carga', () => {
     const bad = loadConfig(['--url', 'postgres://x:x@127.0.0.1:1/runner_dev']);
     assert.notEqual(bad.status, 0);
