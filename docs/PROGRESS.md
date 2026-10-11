@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** spec 001 aprobada; rojo verificado, siguiente implementación API y móvil.
+- **Fase:** implementación base verde en local; adversarial funcional y correcciones pendientes. No cumple DoD todavía.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** mobile-dev implementa raíz/config/plugins sin tocar tests; después adversarial funcional y cobertura completa.
+- **Siguiente acción:** auditoría adversarial de implementación completa, regresiones en rojo por test-writer y correcciones por implementadores. Resolver CI remoto y cobertura completa antes del reviewer.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | rojo verificado; implementación |
+| 001 | Andamiaje | verde local; adversarial/corrección |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -48,6 +48,11 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Segundo defecto de harness identificado tras implementar: AC-07 anclaba cada comando al final del log entero, imposible verificar seis líneas. Test-writer corrigió solo la prueba en `cd9075a`, validó log completo y rechazo de línea ausente; mantiene seis comprobaciones. Resultado delegado: API 18/21, solo AC-09 pendiente de móvil; app sigue roja por raíz ausente. Nunca modificó tests el implementador.
 - Cobertura preliminar API medida por el orquestador: líneas 91,85 %, ramas 50 % en módulos cargados; no incluye todavía el entrypoint sin ejecutar. NO es evidencia DoD final: ampliar casos y medir todos los módulos/ramas después de adversarial.
 - Peer warning móvil comprobado: RNTL 14 auto-instaló test-renderer 1.3/reconciler 0.34 (React 19.3); React constitucional es 19.2. Auditor verificó tabla oficial RNTL: recomienda test-renderer 1.2/reconciler 0.33. Se pidió autorización para pin explícito devDependency `~1.2.0` con ADR junto al override anterior. Fixture Text pasó, pero no reemplaza la compatibilidad oficial. Ningún ajuste aplicado aún.
+- Implementación móvil: sesión `9ba161392a30429398acbe151078dcc8`, commit `2b399be` exclusivamente app fuente/config/README/script test sin passWithNoTests. Raíz Runner, layout Stack, 13 plugins directos y permisos ES. Reportó config introspect, expo install --check y export Android verdes; sin build nativo ni iOS (fuera de alcance 001).
+- Verde local reproducido por el orquestador después de `2b399be`: `scripts/ci-local.sh` completo exit 0, migraciones dev/test y lint/typecheck de ambos; API 21/21, app 1/1. No sustituye AC-08 real ni DoD de cobertura.
+- CI real de rama falló en etapa api tests, antes de instalar app: https://github.com/brayanAndy1996/runner/actions/runs/38158531416/job/114526404983 . La página pública muestra pasos/status; logs requieren login. Posible orden incorrecto: suite API inspecciona plugins en node_modules de app que CI todavía no instaló. Repro y regresión se delegan.
+- Inspección del orquestador confirmó bypass de guardia: NODE_ENV=test con `database: runner_test` y `url: postgres://runner:runner@127.0.0.1:1/runner_dev` permite construir Sequelize con nombre efectivo runner_dev. Solo instanciación/lectura/close, sin conexión a la BD. Bloqueante a validar por adversarial; cubrir precedencia, URLs/query/percent-encoding/dialectOptions/replication y CLI con stubs que impidan cualquier acceso a runner_dev.
+- Gap cobertura móvil confirmado por mobile-dev: raíz 100 %, layout 0 %. Aumentar pruebas sin excluir módulos para maquillar métricas.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 

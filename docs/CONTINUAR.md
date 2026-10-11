@@ -14,7 +14,10 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 - Preparación móvil integrada (`21b8be5`, sesión `9ba161392a30429398acbe151078dcc8`): manifiestos/configs SDK 57, sin fuente ni tests.
 - Rojo AC-01..AC-10 verificado: test-writer `68ed39c3af924cfcab2b7315bbd20aee`, commits `3883878` + `19f23b8`; API 21 tests (6 pass/15 fail), app 1 fail. RNTL 14 exige `await render` (corregido antes de verde); fixture temporal de prueba pasó. El orquestador reprodujo el rojo API y leyó logs.
 - API implementada por `f4fcace13a274c7c96bc2f8388bbe954`, commit `929c2a6`, sin tests: health, Sequelize/guardia, migración pgcrypto, scripts y workflow. Orquestador reprodujo Docker idempotente y migraciones dev/test. API 18/21 tras corrección de harness AC-07 exclusivamente por test-writer (`cd9075a`); solo AC-09 pendiente y raíz móvil aún roja.
-- **Siguiente acción:** mobile-dev implementa raíz/config/plugins sin tocar tests; después adversarial funcional (guardia/CLI/precedencia/CI real) y cobertura completa (entrypoint API y layout incluidos, no solo módulos cargados). Coverage preliminar 91,85 % líneas / 50 % ramas, no DoD final.
+- Móvil implementado (`2b399be`, sesión `9ba161392a30429398acbe151078dcc8`): raíz/layout, app.json con 13 plugins, README dev-build, elimina passWithNoTests. Reportó introspect/export Android verdes. Orquestador reprodujo pipeline local real exit 0 (API21/21, app1/1, migraciones dev/test, lint/typecheck ambos).
+- **Siguiente acción:** adversarial funcional y correcciones con regresiones rojas antes del implementador. CI real falló en api tests antes de instalar app: https://github.com/brayanAndy1996/runner/actions/runs/38158531416/job/114526404983 . Verificar orden de instalaciones porque AC09 inspecciona node_modules/app.
+- Orquestador confirmó sin conectar: `createSequelize({database: "runner_test", url: "postgres://runner:runner@127.0.0.1:1/runner_dev"})` en NODE_ENV=test permite nombre efectivo runner_dev. Auditar todos los destinos/precedencia/CLI; jamás reproducir conectando a runner_dev dentro de pruebas (usar stubs).
+- Coverage preliminar API 91,85 % líneas / 50 % ramas en módulos cargados, falta entrypoint; app index100 % / layout0 %. No DoD final; completar todos los módulos antes del reviewer.
 - Auditor verificó además RNTL14 → test-renderer1.3/reconciler0.34 incompatible por peer con React19.2. Tabla oficial recomienda pin test-renderer1.2. Se añadió a la pregunta pendiente a Bryan; NO cambiar dependencias sin ADR/aprobación.
 - Auditor de dependencias `e0ccbf941b504d23977c374cce13bb96` terminó lectura inicial. Se preguntó a Bryan por override `decode-uri-component@0.5.x` con ADR y aceptación de deuda restante; no hay respuesta todavía. No ejecutar downgrade mayor sugerido por npm audit.
 - Sesiones hijas en máquinas separadas, secuenciales en esta rama y con commits separados por rol. Fallback real disponible: SWE-2 Medium para desarrollo/tests/adversarial y SWE-2 High para reviewer; SOL/Luna siguen siendo las preferencias documentadas, no modelos ejecutados.
@@ -22,10 +25,10 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 ## Mapa del repo
 
 ```
-app/        (aún no existe — spec 001) Expo SDK 57 + TS + expo-router + dev-client
-api/        (aún no existe — spec 001) Express 5 + Sequelize 6 + Postgres 16, ESM
+app/        Expo SDK 57 + TS + expo-router + dev-client; raíz Runner y layout Stack
+api/        Express 5 + Sequelize 6 + Postgres 16, ESM; health/config/factory/guardia
 docs/       metodología completa: planificacion (R-xx, D-xx), agents, specs NNN, decisions, api/openapi.yaml, PROGRESS, CONTINUAR
-scripts/    (aún no existe — spec 001) db-up.sh, ci-local.sh
+scripts/    db-up.sh, ci-local.sh (pipeline verde local; CI remoto pendiente)
 CONSTITUCION.md  stack exacto, comandos, convenciones, DoD
 ```
 
