@@ -8,9 +8,10 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 
 ## Estado exacto (2026-10-11)
 
-- Repo recién creado. PR inicial contiene SOLO documentación: `docs/planificacion.md`, `CONSTITUCION.md`, `docs/agents/*`, `docs/specs/001..011`, `PROGRESS.md`, `CONTINUAR.md`, `docs/api/openapi.yaml` (esqueleto), `.gitignore`.
-- Decisiones del usuario: `docs/planificacion.md` §1 (D-01 a D-07).
-- **Siguiente acción:** que el usuario apruebe las specs (especialmente los `[SUPUESTO]` listados en `docs/PROGRESS.md`); luego arranca el ciclo de `feat/001-andamiaje` según `docs/agents/orquestador.md`.
+- Planificación integrada en `main` con permiso de Bryan; spec 001 aprobada. Rama actual: `feat/001-andamiaje`. No hay permiso para mergear el andamiaje.
+- Decisiones del usuario: `docs/planificacion.md` §1 (D-01 a D-08).
+- **Siguiente acción:** api-dev y mobile-dev preparan dependencias sin funcionalidad; test-writer escribe y comprueba el rojo; el orquestador verifica antes de delegar implementación.
+- Sesiones hijas en máquinas separadas, secuenciales en esta rama y con commits separados por rol. Fallback real disponible: SWE-2 Medium para desarrollo/tests/adversarial y SWE-2 High para reviewer; SOL/Luna siguen siendo las preferencias documentadas, no modelos ejecutados.
 
 ## Mapa del repo
 
