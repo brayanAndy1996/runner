@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "Runner",
+    "slug": "runner",
+    "scheme": "runner",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.runner.app"
+    },
+    "android": {
+      "package": "com.runner.app",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "src/app"
+        }
+      ],
+      "expo-dev-client",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Runner usa tu ubicación para registrar tu recorrido, también con la pantalla apagada.",
+          "locationAlwaysPermission": "Runner usa tu ubicación para registrar tu recorrido, también con la pantalla apagada.",
+          "locationWhenInUsePermission": "Runner usa tu ubicación para registrar tu recorrido mientras caminas o corres.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      "expo-task-manager",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Runner usa los sensores de movimiento para contar tus pasos durante el día."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Runner necesita la cámara para tomar fotos y videos durante tu recorrido.",
+          "microphonePermission": "Runner necesita el micrófono para grabar el audio de tus videos."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Runner guarda en tu galería las fotos y videos que captures durante el recorrido.",
+          "savePhotosPermission": "Runner guarda en tu galería las fotos y videos que captures durante el recorrido.",
+          "granularPermissions": ["photo", "video"]
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Runner usa Face ID para proteger el acceso a tu sesión."
+        }
+      ],
+      "expo-apple-authentication",
+      "@react-native-google-signin/google-signin",
+      "@maplibre/maplibre-react-native",
+      "expo-sharing"
+    ]
+  }
+}
