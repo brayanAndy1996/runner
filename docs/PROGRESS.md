@@ -6,7 +6,7 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 - **Fase:** spec 001 aprobada; rojo verificado, siguiente implementación API y móvil.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** api-dev implementa API/BD/scripts/CI sin tocar tests; después mobile-dev implementa raíz/config/plugins.
+- **Siguiente acción:** mobile-dev implementa raíz/config/plugins sin tocar tests; después adversarial funcional y cobertura completa.
 
 ## Tabla de funcionalidades
 
@@ -44,6 +44,10 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Rojo verificado por el orquestador: sesión test-writer `68ed39c3af924cfcab2b7315bbd20aee`, commits `3883878` y `19f23b8` exclusivamente de tests. API: 21 tests, 6 verdes de preparación (AC-06/AC-10), 15 rojos por funcionalidad ausente. App: 1 test rojo por ausencia de raíz. El orquestador reprodujo el rojo API y leyó ambos logs. Corrigió el test-writer un defecto de harness antes del verde: RNTL 14 exige `await render`; su fixture temporal pasó.
 - AC-01 y AC-07 prueban control de flujo con ejecutables falsos para evitar operaciones en BD de desarrollo y recursión; requieren además Docker/pipeline reales. AC-08 tiene prueba estructural y requiere CI real verde. AC-03 prueba migración real solo en `runner_test`; la migración dev se verificará fuera de la suite.
 - Auditoría inicial de dependencias: sesión `e0ccbf941b504d23977c374cce13bb96`, solo lectura. Advierte `decode-uri-component` en deep links (media), `node-forge` en firma/prebuild (media) y `braces`/`sprintf-js`/`uuid` (bajas por uso actual). npm audit conserva altas transitivas. Pendiente de autorización de Bryan para override de `decode-uri-component@0.5.x` con ADR y aceptación explícita de las demás como deuda; no aplicado ni asumido.
+- Implementación API: sesión `f4fcace13a274c7c96bc2f8388bbe954`, commit `929c2a6` exclusivamente de producción/config/OpenAPI. Health, config/factory/guardia, migración pgcrypto, db-up/ci-local y workflow. El orquestador reprodujo db-up real dos veces, migración dev y test, y suite API (17/21 antes de corregir harness).
+- Segundo defecto de harness identificado tras implementar: AC-07 anclaba cada comando al final del log entero, imposible verificar seis líneas. Test-writer corrigió solo la prueba en `cd9075a`, validó log completo y rechazo de línea ausente; mantiene seis comprobaciones. Resultado delegado: API 18/21, solo AC-09 pendiente de móvil; app sigue roja por raíz ausente. Nunca modificó tests el implementador.
+- Cobertura preliminar API medida por el orquestador: líneas 91,85 %, ramas 50 % en módulos cargados; no incluye todavía el entrypoint sin ejecutar. NO es evidencia DoD final: ampliar casos y medir todos los módulos/ramas después de adversarial.
+- Peer warning móvil comprobado: RNTL 14 auto-instaló test-renderer 1.3/reconciler 0.34 (React 19.3); React constitucional es 19.2. Auditor verificó tabla oficial RNTL: recomienda test-renderer 1.2/reconciler 0.33. Se pidió autorización para pin explícito devDependency `~1.2.0` con ADR junto al override anterior. Fixture Text pasó, pero no reemplaza la compatibilidad oficial. Ningún ajuste aplicado aún.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
