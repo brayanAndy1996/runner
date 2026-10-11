@@ -1,7 +1,7 @@
 // Configuración Sequelize por entorno, consumida por sequelize-cli
 // (.sequelizerc apunta aquí) y por src/index.js. ESM: sequelize-cli la
 // carga con import dinámico; .sequelizerc sigue siendo CommonJS.
-import { assertTestTarget } from './guard.js';
+import { assertCliTarget, cliFlagValue } from './guard.js';
 
 const base = {
   username: process.env.DB_USER ?? 'runner',
@@ -28,11 +28,19 @@ const config = {
   },
 };
 
-// Misma guardia que createSequelize: con NODE_ENV=test, cualquier cliente de
-// esta config (sequelize-cli incluido) aborta antes de conectar si la BD de
-// test no termina en _test.
+// Misma guardia que createSequelize, con la semántica del CLI: con
+// NODE_ENV=test se valida la entrada que el invocador selecciona (--env,
+// --url) —no siempre config.test—, así también cubre cargas por --config
+// desde cwd sin .sequelizerc.
 if (process.env.NODE_ENV === 'test') {
-  assertTestTarget(config.test);
+  const argv = process.argv.slice(2);
+  const urlArg = cliFlagValue(argv, '--url');
+  const envArg = cliFlagValue(argv, '--env') ?? 'test';
+  const target =
+    typeof urlArg === 'string' && urlArg.length > 0
+      ? { url: urlArg }
+      : (config[/** @type {keyof typeof config} */ (envArg)] ?? config.test ?? {});
+  assertCliTarget(/** @type {Record<string, unknown>} */ (target));
 }
 
 export default config;

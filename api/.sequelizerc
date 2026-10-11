@@ -3,21 +3,15 @@ const path = require('node:path');
 
 // Preflight de la guardia de tests (ADV-001-F2): con NODE_ENV=test, validar el
 // destino EFECTIVO del CLI —--env/--env=X (selección de entrada), --url (salta
-// config.js) y --config (otro archivo de config) — antes de que sequelize-cli
+// config.js) y --config (otro archivo de config)— antes de que sequelize-cli
 // toque la red. guard.js/config.js son ESM sin top-level await: Node 24 los
 // carga con require() sin problema.
 if (process.env.NODE_ENV === 'test') {
   const guard = require('./src/db/guard.js');
   const argv = process.argv.slice(2);
-  const flagValue = (name) => {
-    const i = argv.indexOf(name);
-    if (i >= 0 && i + 1 < argv.length) return argv[i + 1];
-    const eq = argv.find((a) => a.startsWith(`${name}=`));
-    return eq ? eq.slice(name.length + 1) : undefined;
-  };
-  const urlArg = flagValue('--url');
-  const envArg = flagValue('--env') ?? process.env.NODE_ENV;
-  const configArg = flagValue('--config');
+  const urlArg = guard.cliFlagValue(argv, '--url');
+  const envArg = guard.cliFlagValue(argv, '--env') ?? process.env.NODE_ENV;
+  const configArg = guard.cliFlagValue(argv, '--config');
   let target;
   if (typeof urlArg === 'string' && urlArg.length > 0) {
     target = { url: urlArg };
@@ -29,7 +23,7 @@ if (process.env.NODE_ENV === 'test') {
     const config = loaded.default ?? loaded;
     target = config[envArg] ?? {};
   }
-  guard.assertTestTarget(target);
+  guard.assertCliTarget(target);
 }
 
 module.exports = {

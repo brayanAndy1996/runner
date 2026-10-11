@@ -10,7 +10,9 @@
 export function databaseFromUrl(url) {
   if (typeof url !== 'string' || url.length === 0) return undefined;
   try {
-    const name = new URL(url).pathname.replace(/^\//, '').split('/')[0];
+    // Sequelize/pg usan el path COMPLETO como nombre de BD (p.ej.
+    // '/a/b' → 'a/b'), no solo el primer segmento.
+    const name = new URL(url).pathname.replace(/^\//, '');
     return name || undefined;
   } catch {
     return undefined;
@@ -60,8 +62,11 @@ export function assertTestDatabaseName(name) {
  * @returns {string|undefined}
  */
 function replicationNodeName(node, base) {
-  if (typeof node.database === 'string' && node.database.length > 0) {
-    return node.database;
+  // 'database' explícito falsy ('', null, 0, false) NO hereda: Sequelize lo
+  // conserva (_.defaults) y pg cae a PGDATABASE — solo la clave ausente
+  // hereda la base de forma segura.
+  if (Object.prototype.hasOwnProperty.call(node, 'database')) {
+    return /** @type {string|undefined} */ (node.database ?? undefined) || undefined;
   }
   if (typeof node.url === 'string' && node.url.length > 0) {
     return databaseFromUrl(node.url);
@@ -82,6 +87,65 @@ export function assertTestTarget(options = {}) {
   assertTestDatabaseName(base);
   const rep = /** @type {{read?: unknown, write?: unknown}|undefined} */ (
     options.replication
+  );
+  if (rep && typeof rep === 'object') {
+    const nodes = [
+      ...(Array.isArray(rep.read) ? rep.read : []),
+      ...(rep.write ? [rep.write] : []),
+    ];
+    for (const node of nodes) {
+      assertTestDatabaseName(
+        replicationNodeName(/** @type {Record<string, unknown>} */ (node ?? {}), base),
+      );
+    }
+  }
+}
+
+/**
+ * Valor de un flag estilo `--env x` / `--env=x` en argv de sequelize-cli.
+ * @param {string[]} argv
+ * @param {string} name
+ * @returns {string|undefined}
+ */
+export function cliFlagValue(argv, name) {
+  const i = argv.indexOf(name);
+  if (i >= 0 && i + 1 < argv.length) return argv[i + 1];
+  const eq = argv.find(
+    (a) => typeof a === 'string' && a.startsWith(`${name}=`),
+  );
+  return eq ? eq.slice(name.length + 1) : undefined;
+}
+
+/**
+ * Nombre de BD efectivo para una entrada del CLI: a diferencia de la
+ * fábrica, sequelize-cli fusiona parseDbUrl(url/envUrl) SOBRE la config
+ * (lodash.merge), así que una URL presente sin path produce database '' que
+ * desvía a PGDATABASE — no es un destino verificable: inseguro.
+ * @param {Record<string, unknown>} target
+ * @returns {string|undefined}
+ */
+export function cliTargetDatabaseName(target = {}) {
+  if (typeof target.url === 'string' && target.url.length > 0) {
+    return databaseFromUrl(target.url);
+  }
+  if (typeof target.use_env_variable === 'string' && target.use_env_variable) {
+    const envUrl = process.env[target.use_env_variable];
+    if (envUrl) return databaseFromUrl(envUrl);
+  }
+  return resolveDatabaseName(target);
+}
+
+/**
+ * Guardia de destino para el camino del CLI (semántica merge de
+ * config-helper), incluidos nodos de replicación.
+ * @param {Record<string, unknown>} target
+ * @returns {void}
+ */
+export function assertCliTarget(target = {}) {
+  const base = cliTargetDatabaseName(target);
+  assertTestDatabaseName(base);
+  const rep = /** @type {{read?: unknown, write?: unknown}|undefined} */ (
+    target.replication
   );
   if (rep && typeof rep === 'object') {
     const nodes = [
