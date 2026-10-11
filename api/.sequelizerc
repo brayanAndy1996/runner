@@ -1,0 +1,8 @@
+// CommonJS a propósito: sequelize-cli lo carga con require (ver CONSTITUCION.md §5).
+const path = require('node:path');
+
+module.exports = {
+  config: path.resolve('src', 'db', 'config.js'),
+  'migrations-path': path.resolve('migrations'),
+  'models-path': path.resolve('src', 'models'),
+};
