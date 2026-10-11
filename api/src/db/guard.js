@@ -114,12 +114,22 @@ export function assertTestTarget(options = {}) {
  * @returns {string|undefined}
  */
 export function cliFlagValue(argv, name) {
-  const i = argv.indexOf(name);
-  if (i >= 0 && i + 1 < argv.length) return argv[i + 1];
-  const eq = argv.find(
-    (a) => typeof a === 'string' && a.startsWith(`${name}=`),
-  );
-  return eq ? eq.slice(name.length + 1) : undefined;
+  // yargs acepta el flag en kebab-case y en camelCase (--options-path /
+  // --optionsPath) como el mismo option: la guardia debe leer ambas formas.
+  const aliases = [name];
+  const camel = name.replace(/([a-z0-9])-([a-z])/g, (_m, a, c) => a + c.toUpperCase());
+  if (camel !== name) aliases.push(camel);
+  for (const alias of aliases) {
+    const i = argv.indexOf(alias);
+    if (i >= 0 && i + 1 < argv.length) return argv[i + 1];
+  }
+  for (const alias of aliases) {
+    const eq = argv.find(
+      (a) => typeof a === 'string' && a.startsWith(`${alias}=`),
+    );
+    if (eq) return eq.slice(alias.length + 1);
+  }
+  return undefined;
 }
 
 /**
