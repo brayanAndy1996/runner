@@ -1,0 +1,23 @@
+openapi: 3.1.0
+info:
+  title: Runner API
+  version: 0.0.0
+  description: >-
+    Contrato app↔api. Fuente de verdad: cada spec que añade endpoints
+    los documenta aquí y la implementación debe coincidir.
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: API operativa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+# Los endpoints de specs 005+ se añaden con su spec aprobada.
