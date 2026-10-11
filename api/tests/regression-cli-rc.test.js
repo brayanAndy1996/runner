@@ -92,13 +92,10 @@ describe('001: ADV-001-F2-R3 — claves env/url del rc del CLI', () => {
     assertGuardAbort(cli(cwd), 'cwd/.sequelizerc env=development');
   });
 
-  test('rc cwd con url .../runner_dev debe abortar (no ECONNREFUSED)', () => {
-    const cwd = rcDir({
-      config: configAbs,
-      url: 'postgres://runner:runner@127.0.0.1:1/runner_dev',
-    });
-    assertGuardAbort(cli(cwd), 'cwd/.sequelizerc url=runner_dev');
-  });
+  // NOTA (corrección del orquestador): rc.url no es exigible — con args.url
+  // el config-helper del CLI omite cargar config.js, así que no corre código
+  // propio y la guardia no puede actuar. Solo `env` (que sí carga nuestro
+  // config) está dentro de la frontera.
 
   test('--options-path con env:"development" debe abortar', () => {
     const dir = rcDir({ config: configAbs, env: 'development' });
@@ -111,14 +108,6 @@ describe('001: ADV-001-F2-R3 — claves env/url del rc del CLI', () => {
   test('control — rc cwd con env:"test" muere por red SIN guardia', () => {
     const cwd = rcDir({ config: configAbs, env: 'test' });
     assertNetworkDeath(cli(cwd), 'rc env=test');
-  });
-
-  test('control — rc cwd con url .../runner_test muere por red SIN guardia', () => {
-    const cwd = rcDir({
-      config: configAbs,
-      url: 'postgres://runner:runner@127.0.0.1:1/runner_test',
-    });
-    assertNetworkDeath(cli(cwd), 'rc url=runner_test');
   });
 
   test('control — el flag --env test tiene precedencia sobre rc env:"development"', () => {
