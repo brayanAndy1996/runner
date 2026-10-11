@@ -244,18 +244,16 @@ describe('001: ADV-001-F2-R5 — rc que precarga config.js (ciclo parcial)', () 
     );
     const r = cli(apiDir, ['--options-path', rcPath]);
     assertGuardAbort(r, 'rc precargando .sequelizerc');
-    // Orden export-first: los exports ya están completos cuando el rc
-    // require'a el .sequelizerc propio → el env rc SÍ se resuelve
-    // ('development') y la guardia aborta por destino dev. Ambos órdenes
-    // deben terminar en aborto seguro, nunca en TCP.
+    // Orden export-first con config.js: exports poblados pero el rc aún
+    // en carga → el preflight falla cerrado igual. Ambos órdenes abortan.
     const dir2 = mkdtempSync(join(tmpdir(), 'runner-cli-rc5e-'));
     const rcPath2 = join(dir2, 'rc.cjs');
     writeFileSync(
       rcPath2,
       `module.exports = ${JSON.stringify({ config: configAbs, env: 'development' })};\n` +
-        `require(${JSON.stringify(rcAbs)});\n`,
+        `require(${JSON.stringify(configAbs)});\n`,
     );
-    assertGuardAbort(cli(apiDir, ['--options-path', rcPath2]), 'rc export-first');
+    assertGuardAbort(cli(apiDir, ['--options-path', rcPath2]), 'rc export-first config.js');
     // Control: un symlink al MISMO rc precargador conserva el fail-closed
     // (realpath en require.cache no desambigüa el env aún-en-carga).
     const linkDir = mkdtempSync(join(tmpdir(), 'runner-cli-rc5l-'));
