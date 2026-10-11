@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** cuarto fix verificado: pipeline, cobertura y CI verdes; re-test adversarial sin críticos ni altos abiertos. Revisión independiente y decisiones pendientes; no cumple DoD todavía.
+- **Fase:** quinto fix F2-R5 y refuerzo de cobertura verificados; pipeline/CI verdes y adversarial sin críticos/altos. Reviewer previo `BLOQUEADO` y decisiones del usuario pendientes; no cumple DoD.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** reviewer independiente revisa diff y evidencias; resolver con Bryan las decisiones de dependencias/deuda antes de `APROBADO` y PR.
+- **Siguiente acción:** resolver siete decisiones con Bryan; aplicar únicamente lo aprobado, registrar ADR y revalidar antes de la revisión `APROBADO` y el PR.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | cuarto fix verde y sin altos; decisiones y reviewer pendientes |
+| 001 | Andamiaje | quinto fix con pruebas/CI verdes y adversarial sin altos; decisiones y reviewer pendientes |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -88,6 +88,28 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Re-test de `e0ccbf941b504d23977c374cce13bb96` terminado sobre `5174dae`, únicamente lectura/probes offline a puerto 1: **cero críticos/altos abiertos**. F2-R4 cerrado en ambas formas del alias; controles seguros, precedencias y regresiones R1–R3 re-verificados. No conectó ni autenticó contra `runner_dev`, ni modificó fuentes/tests/dependencias.
 - Auditoría npm actual de app: 53 altas / 16 moderadas propagadas, correspondientes a cinco advisories hoja; no hay críticas. Continúan pendientes los cambios móviles, ADR y aceptación explícita de deuda. No se ejecutó `npm audit fix` ni se autorizaron cambios por omisión.
 - Bajos F5 (factory por convención), F8 (`NODE_ENV=test` exacto), F9 (readiness/puerto), frontera del CLI sin código propio y notas F11 (Google iOS futuro), F7/F12 (rechazos seguros) no equivalen a altos abiertos; tampoco están aceptados como deuda. El reviewer verificará código/logs y emitirá `BLOQUEADO` si faltan decisiones, nunca un `APROBADO` condicional.
+
+### Quinto ciclo: precarga/caché de configuración (2026-10-11)
+
+- Reviewer independiente `8f8f993fe14e471391a07d00a7be688f`, SWE-2 High, auditó el diff y reprodujo F2-R5 offline; emitió **BLOQUEADO** para el SHA previo `5edacf4` por este alto y siete decisiones pendientes de Bryan (dependencias, deuda, frontera del CLI y convención de tests). CI documental de `5edacf4` comprobado: https://github.com/brayanAndy1996/runner/actions/runs/38164174038 — `completed/success`.
+- Después del re-test, el orquestador reprodujo F2-R5 offline: un rc externo hace `require(config.js)` antes de exportar `{ env: 'development', config: <config propio> }`. La guardia lee exports parciales del rc, valida test y queda cacheada; luego el CLI selecciona development e intenta TCP a `127.0.0.1:1`. A diferencia de `rc.url`, aquí sí se carga código propio. No hubo acceso a `runner_dev` real.
+- Test-writer entregó `2ae608f459b531052b01512b5aa2dae84ff879ea`, solo `api/tests/regression-cli-rc.test.js`; el orquestador reprodujo API 134 tests, 132 pass / 2 fail exclusivamente F2-R5 (kebab y camel separado/igual). Corrigió en `6f4944cf253221ce37f518c05a43966438c23d5b` el control de rc ambiguo sin flag para permitir rechazo conservador; las aserciones rojas y la precedencia de `--env` explícito se mantuvieron. El orquestador reprodujo el mismo rojo 132/134 antes de producción.
+- API-dev entregó `a0518aef8e68181cd00b0a4ef92abf17c37042d9`, solo `api/src/db/guard.js`, `api/src/db/config.js` y `api/.sequelizerc`: detectar rc aún-en-carga por entrada canónica de la caché CommonJS y abortar con guardia `_test` antes de conectar cuando no se conoce el env; el flag `--env` explícito conserva la precedencia. El orquestador comprobó diff y separación de roles, y reprodujo el pipeline real: Docker PostgreSQL 16 y migraciones dev/test, API 134/134, app 2/2, lint y typecheck de ambos paquetes en verde. Repitió `db-up.sh`: idempotente, bases dev/test presentes. Coverage del quinto fix: API 99,32 % líneas / 92,31 % ramas / 100 % funciones global, guard 100/94,94/100; app raíz/layout 100 % en todas las métricas. No se cambiaron exclusiones de cobertura. Un probe propio con rc precargador enlazado simbólicamente abortó por guardia antes de red con tres variantes de flag; con `--env test` explícito intentó conectar **solo** a `127.0.0.1:1` en entorno `test`. Ningún probe se conectó ni autenticó contra `runner_dev`. CI remoto del mismo SHA: https://github.com/brayanAndy1996/runner/actions/runs/38165534566 — `completed/success`.
+- Re-test adversarial independiente `e0ccbf941b504d23977c374cce13bb96` cerrado sobre `a0518ae`: **cero críticos/altos abiertos**, F2-R5 cerrado, regresiones anteriores y controles de precedencia re-verificados offline; se evaluó además precarga indirecta/asíncrona y flags ambiguos sin defectos nuevos. No cambió código ni aceptó deuda.
+- Refuerzo de test-writer integrado en `b03819763cc6d0769a7d1aadaa0613caf38127cb` y `e4a1fce21612b3fbb659026744f92bcec4191527`: únicamente `api/tests/regression-cli-rc.test.js`. Cubre rc externo que precarga `.sequelizerc` propio antes de exportar, symlink al mismo rc parcialmente cargado y orden export-first que precarga `config.js`. El orquestador corrigió con test-writer una explicación factual del control: `loaded=false` obliga a rechazo conservador incluso cuando exports ya están poblados; no se confía en ellos como entorno definitivo.
+- Revalidación independiente del orquestador sobre `e4a1fce`: pipeline completo en verde con PostgreSQL 16 y migraciones development/test, API **135/135**, app **2/2**, lint y typecheck de ambos paquetes; `db-up.sh` repetido correctamente. Cobertura API global **100 % líneas / 93,20 % ramas / 100 % funciones**; `.sequelizerc` **100/100/100**, `guard.js` **100/94,94/100**; app raíz/layout **100 %** en todas las métricas. Instrumentación sin cambios. CI del mismo SHA: https://github.com/brayanAndy1996/runner/actions/runs/38166143316 — `completed/success`. Entre `a0518ae` y `e4a1fce` solo cambió ese archivo de tests, no producción, dependencias, scripts ni CI: el re-test independiente conserva su mismo código auditado. Ningún probe usa ni autentica contra `runner_dev` real. Aún faltan decisiones explícitas de Bryan, re-revisión `APROBADO` y verificación DoD.
+
+### Decisiones pendientes de Bryan (H-02 del reviewer)
+
+Ninguna se da por aceptada; la propuesta enviada al usuario no es una autorización:
+
+1. Override compatible de `decode-uri-component@^0.5.x` con ADR.
+2. Pin de `test-renderer@~1.2.0` con ADR (el reporte del reviewer lo llamó `react-native-test-renderer`; ese paquete no está instalado, el real es `test-renderer`).
+3. Alineación Reanimated/Worklets con la matriz Expo 57, con ADR.
+4. Aceptar/documentar como deuda los advisories restantes de `braces`, `node-forge`, `sprintf-js` y `uuid`, o corregirlos de forma compatible.
+5. Elegir política para CLI externo que no ejecuta código propio (wrapper obligatorio, limitación documentada o endurecimiento posterior); incluye F5, uso de la factory por convención: `new Sequelize` directo fuera de ella evita la guardia.
+6. Corregir o aceptar explícitamente los bajos/notas F8, F9, F11, F7 y F12.
+7. Reubicar/renombrar regresiones adversariales según `CONSTITUCION.md` §5 o aprobar una enmienda/excepción explícita para API JavaScript. No modificar la constitución para eludir el gate.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
