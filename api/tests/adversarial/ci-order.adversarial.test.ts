@@ -12,17 +12,13 @@ import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const workflowsDir = `${repoRoot}.github/workflows`;
 
-/**
- * Extrae pares ordenados {dir, cmd} de los steps `run:` con working-directory.
- * @param {string} yml
- * @returns {{dir: string, cmd: string}[]}
- */
-function steps(yml) {
+/** Extrae pares ordenados {dir, cmd} de los steps `run:` con working-directory. */
+function steps(yml: string): { dir: string; cmd: string }[] {
   const blocks = yml.split(/^\s{6}- /m).slice(1);
-  const out = [];
+  const out: { dir: string; cmd: string }[] = [];
   for (const b of blocks) {
     const dir = b.match(/working-directory:\s*(\S+)/)?.[1];
     const cmd = b.match(/run:\s*(.+)/)?.[1]?.trim();
@@ -32,7 +28,7 @@ function steps(yml) {
 }
 
 describe('001: orden de steps en el workflow CI', () => {
-  test('AC-08: la instalación de dependencias de app precede a los tests de api', () => {
+  test('AC-08 (ADV-001-F6): la instalación de dependencias de app precede a los tests de api', () => {
     assert.ok(existsSync(workflowsDir), 'falta .github/workflows/');
     const files = readdirSync(workflowsDir).filter((f) => /\.(yml|yaml)$/.test(f));
     assert.ok(files.length > 0);

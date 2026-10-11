@@ -15,14 +15,17 @@ import { fileURLToPath } from 'node:url';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { run } from './helpers/proc.js';
+import { run } from '../helpers/proc.js';
 
-const apiDir = fileURLToPath(new URL('../', import.meta.url));
-const connectionUrl = new URL('../src/db/connection.js', import.meta.url).href;
+type RunResult = import('../helpers/proc.js').RunResult;
+type Env = Record<string, string | undefined>;
+
+const apiDir = fileURLToPath(new URL('../../', import.meta.url));
+const connectionUrl = new URL('../../src/db/connection.js', import.meta.url).href;
 
 // Entorno del CLI: puerto 1 cerrado. Cualquier intento real de conexión muere
 // con ECONNREFUSED; la guardia debe disparar ANTES.
-const CLI_ENV = {
+const CLI_ENV: Env = {
   NODE_ENV: 'test',
   DB_HOST: '127.0.0.1',
   DB_PORT: '1',
@@ -35,13 +38,8 @@ const CLI_ENV = {
   DATABASE_URL: undefined,
 };
 
-/**
- * @param {string[]} args
- * @param {Record<string,string|undefined>} [extra]
- * @returns {import('./helpers/proc.js').RunResult}
- */
-function cli(args, extra = {}) {
-  const env = /** @type {Record<string,string|undefined>} */ ({ ...process.env, ...CLI_ENV });
+function cli(args: string[], extra: Env = {}): RunResult {
+  const env: Env = { ...process.env, ...CLI_ENV };
   return run('npx', ['sequelize', ...args], {
     cwd: apiDir,
     env: { ...env, ...extra },
@@ -49,11 +47,7 @@ function cli(args, extra = {}) {
   });
 }
 
-/**
- * @param {import('./helpers/proc.js').RunResult} r
- * @param {string} ctx
- */
-function assertGuardAbort(r, ctx) {
+function assertGuardAbort(r: RunResult, ctx: string): void {
   assert.notEqual(r.status, 0, `${ctx}: debió terminar != 0:\n${r.output}`);
   assert.match(
     r.output,
@@ -111,11 +105,7 @@ describe('001: ADV-001-F2 guardia del CLI sequelize', () => {
   });
 });
 
-/**
- * @param {string} configLiteral
- * @returns {string}
- */
-function childScript(configLiteral) {
+function childScript(configLiteral: string): string {
   return `
     const { createSequelize } = await import(${JSON.stringify(connectionUrl)});
     const seq = createSequelize(${configLiteral});
@@ -134,12 +124,7 @@ function childScript(configLiteral) {
   `;
 }
 
-/**
- * @param {string} configLiteral
- * @param {Record<string,string|undefined>} [env]
- * @returns {import('./helpers/proc.js').RunResult}
- */
-function probe(configLiteral, env = {}) {
+function probe(configLiteral: string, env: Env = {}): RunResult {
   return run('node', ['--input-type=module', '-e', childScript(configLiteral)], {
     cwd: apiDir,
     env: { NODE_ENV: 'test', DB_HOST: '127.0.0.1', DB_PORT: '1', ...env },
@@ -147,12 +132,8 @@ function probe(configLiteral, env = {}) {
   });
 }
 
-/**
- * Aborto por guardia, o destino efectivo *_test si se construye.
- * @param {import('./helpers/proc.js').RunResult} r
- * @param {string} ctx
- */
-function assertAbortOrTestTarget(r, ctx) {
+/** Aborto por guardia, o destino efectivo *_test si se construye. */
+function assertAbortOrTestTarget(r: RunResult, ctx: string): void {
   if (r.status !== 0) {
     assert.match(r.output, /_test/i, `${ctx}: abortó sin mencionar _test:\n${r.output}`);
     return;
@@ -174,7 +155,9 @@ describe('001: ADV-001-F2 residual — use_env_variable con URL raíz en el CLI'
   // parseDbUrl(namedURL) encima → database:'' → Sequelize cae a PGDATABASE dev.
   // La fábrica directa con las mismas options sigue segura (su constructor URL
   // usa defaults); el bypass es propio del camino merge del CLI.
-  const fixture = fileURLToPath(new URL('./fixtures/cli-use-env-config.cjs', import.meta.url));
+  const fixture = fileURLToPath(
+    new URL('../fixtures/cli-use-env-config.cjs', import.meta.url),
+  );
 
   test('ADV-001-F2 residual: --env test --config fixture + named URL raíz debe abortar (no ECONNREFUSED)', () => {
     const r = cli(['db:migrate:status', '--env', 'test', '--config', fixture], {
@@ -203,21 +186,13 @@ describe('001: ADV-001-F2 residual — CLI desde cwd sin .sequelizerc', () => {
   // destino no-test elegido, no solo validar config.test. Bin local por path
   // absoluto (npx en cwd temp descargaría el paquete de red).
   const bin = fileURLToPath(
-    new URL('../node_modules/sequelize-cli/lib/sequelize', import.meta.url),
+    new URL('../../node_modules/sequelize-cli/lib/sequelize', import.meta.url),
   );
-  const configAbs = fileURLToPath(new URL('../src/db/config.js', import.meta.url));
+  const configAbs = fileURLToPath(new URL('../../src/db/config.js', import.meta.url));
 
-  /**
-   * @param {Record<string,string|undefined>} [extra]
-   * @returns {import('./helpers/proc.js').RunResult}
-   */
-  function cliSinRc(extra = {}) {
+  function cliSinRc(extra: Env = {}): RunResult {
     const cwd = mkdtempSync(join(tmpdir(), 'runner-cli-norc-'));
-    const env = /** @type {Record<string,string|undefined>} */ ({
-      ...process.env,
-      ...CLI_ENV,
-      ...extra,
-    });
+    const env: Env = { ...process.env, ...CLI_ENV, ...extra };
     return run(
       process.execPath,
       [bin, 'db:migrate:status', '--config', configAbs, '--env', 'development'],
@@ -238,7 +213,7 @@ describe('001: ADV-001-F2 residual — CLI desde cwd sin .sequelizerc', () => {
 });
 
 describe('001: ADV-001-F3 replication read/write', () => {
-  const repl = (/** @type {string} */ w, /** @type {string} */ rr) =>
+  const repl = (w: string, rr: string) =>
     JSON.stringify({
       database: 'runner_test',
       dialect: 'postgres',

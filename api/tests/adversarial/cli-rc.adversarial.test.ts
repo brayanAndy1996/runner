@@ -15,16 +15,19 @@ import { fileURLToPath } from 'node:url';
 import { mkdtempSync, writeFileSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { run } from './helpers/proc.js';
+import { run } from '../helpers/proc.js';
 
-const apiDir = fileURLToPath(new URL('../', import.meta.url));
+type RunResult = import('../helpers/proc.js').RunResult;
+type Env = Record<string, string | undefined>;
+
+const apiDir = fileURLToPath(new URL('../../', import.meta.url));
 const bin = fileURLToPath(
-  new URL('../node_modules/sequelize-cli/lib/sequelize', import.meta.url),
+  new URL('../../node_modules/sequelize-cli/lib/sequelize', import.meta.url),
 );
-const configAbs = fileURLToPath(new URL('../src/db/config.js', import.meta.url));
-const rcAbs = fileURLToPath(new URL('../.sequelizerc', import.meta.url));
+const configAbs = fileURLToPath(new URL('../../src/db/config.js', import.meta.url));
+const rcAbs = fileURLToPath(new URL('../../.sequelizerc', import.meta.url));
 
-const CLI_ENV = {
+const CLI_ENV: Env = {
   NODE_ENV: 'test',
   DB_HOST: '127.0.0.1',
   DB_PORT: '1',
@@ -35,23 +38,14 @@ const CLI_ENV = {
 };
 
 /** Directorio temporal con .sequelizerc del contenido dado. */
-function rcDir(/** @type {Record<string,unknown>} */ rc) {
+function rcDir(rc: Record<string, unknown>): string {
   const dir = mkdtempSync(join(tmpdir(), 'runner-cli-rc-'));
   writeFileSync(join(dir, '.sequelizerc'), `module.exports = ${JSON.stringify(rc)};\n`);
   return dir;
 }
 
-/**
- * @param {string} cwd
- * @param {string[]} [args]
- * @param {Record<string,string|undefined>} [extra]
- */
-function cli(cwd, args = [], extra = {}) {
-  const env = /** @type {Record<string,string|undefined>} */ ({
-    ...process.env,
-    ...CLI_ENV,
-    ...extra,
-  });
+function cli(cwd: string, args: string[] = [], extra: Env = {}): RunResult {
+  const env: Env = { ...process.env, ...CLI_ENV, ...extra };
   return run(process.execPath, [bin, 'db:migrate:status', ...args], {
     cwd,
     env,
@@ -59,11 +53,7 @@ function cli(cwd, args = [], extra = {}) {
   });
 }
 
-/**
- * @param {import('./helpers/proc.js').RunResult} r
- * @param {string} ctx
- */
-function assertGuardAbort(r, ctx) {
+function assertGuardAbort(r: RunResult, ctx: string): void {
   assert.notEqual(r.status, 0, `${ctx}: debió terminar != 0:\n${r.output}`);
   assert.match(
     r.output,
@@ -77,11 +67,7 @@ function assertGuardAbort(r, ctx) {
   );
 }
 
-/**
- * @param {import('./helpers/proc.js').RunResult} r
- * @param {string} ctx
- */
-function assertNetworkDeath(r, ctx) {
+function assertNetworkDeath(r: RunResult, ctx: string): void {
   assert.notEqual(r.status, 0, `${ctx}: debió morir por red:\n${r.output}`);
   assert.match(r.output, /ECONNREFUSED|ConnectionRefusedError|connect/i);
   assert.doesNotMatch(r.output, /Guardia de tests/, `${ctx}: abortó por guardia siendo seguro:\n${r.output}`);
@@ -126,8 +112,7 @@ describe('001: ADV-001-F2-R4 — --optionsPath camelCase no leído por la guardi
   // yargs acepta `--optionsPath` (camelCase) además de `--options-path`; la
   // guardia solo lee la forma kebab → el rc camel se aplica sin validar.
   // rc generado en tmpdir (fuera del repo) apuntando a nuestro config.js.
-  /** @param {string[]} optArgs */
-  function camelCaseRc(optArgs) {
+  function camelCaseRc(optArgs: string[]): RunResult {
     const dir = rcDir({ config: configAbs, env: 'development' });
     const rcPath = join(dir, 'rc-camel.cjs');
     writeFileSync(rcPath, `module.exports = ${JSON.stringify({ config: configAbs, env: 'development' })};\n`);
@@ -142,8 +127,7 @@ describe('001: ADV-001-F2-R4 — --optionsPath camelCase no leído por la guardi
     assertGuardAbort(camelCaseRc(['--optionsPath=RC_PATH']), '--optionsPath= forma');
   });
 
-  /** @param {string[]} optArgs @param {string[]} [cliArgs] */
-  function camelCaseEnv(optArgs, cliArgs = []) {
+  function camelCaseEnv(optArgs: string[], cliArgs: string[] = []): RunResult {
     const dir = mkdtempSync(join(tmpdir(), 'runner-cli-rc-'));
     const rcPath = join(dir, 'rc-camel.cjs');
     writeFileSync(rcPath, `module.exports = ${JSON.stringify({ config: configAbs, env: 'test' })};\n`);
@@ -176,11 +160,7 @@ describe('001: ADV-001-F2-R5 — rc que precarga config.js (ciclo parcial)', () 
   // exports aún son {} — la guardia evalúa la entrada "test" (sin --env) y
   // pasa; la caché de módulos devuelve el config ya evaluado; luego el CLI
   // elige development y llega a TCP. Guardia exigida ANTES de la red.
-  /**
-   * @param {string} env
-   * @returns {string} path al rc generado
-   */
-  function preloadRc(env) {
+  function preloadRc(env: string): string {
     const dir = mkdtempSync(join(tmpdir(), 'runner-cli-rc5-'));
     const p = join(dir, 'rc.cjs');
     writeFileSync(

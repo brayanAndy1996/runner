@@ -9,10 +9,10 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { run } from './helpers/proc.js';
-import { makeFakeBin } from './helpers/fake-bin.js';
+import { run } from '../helpers/proc.js';
+import { makeFakeBin } from '../helpers/fake-bin.js';
 
-const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const scriptPath = `${repoRoot}scripts/ci-local.sh`;
 
 describe('001: orden de instalación en ci-local.sh', () => {
@@ -24,7 +24,7 @@ describe('001: orden de instalación en ci-local.sh', () => {
     const lines = log.split('\n').map((l) => l.trim()).filter(Boolean);
 
     /** Índice de la primera línea que casa el patrón; -1 si no hay. */
-    const idx = (/** @type {RegExp} */ re) => lines.findIndex((l) => re.test(l));
+    const idx = (re: RegExp) => lines.findIndex((l) => re.test(l));
     const apiInstall = idx(/^npm (ci|install|i)\b.*@ .*\/api\/?$/);
     const appInstall = idx(/^npm (ci|install|i)\b.*@ .*\/app\/?$/);
     const firstValidation = idx(/^npm (run |)(db:migrate|lint|typecheck|test)\b.*@ /);

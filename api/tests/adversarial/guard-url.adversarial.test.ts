@@ -10,19 +10,17 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { run } from './helpers/proc.js';
+import { run } from '../helpers/proc.js';
 
-const apiDir = fileURLToPath(new URL('../', import.meta.url));
-const connectionUrl = new URL('../src/db/connection.js', import.meta.url).href;
+type RunResult = import('../helpers/proc.js').RunResult;
+
+const apiDir = fileURLToPath(new URL('../../', import.meta.url));
+const connectionUrl = new URL('../../src/db/connection.js', import.meta.url).href;
 
 const DEV_URL = 'postgres://runner:runner@127.0.0.1:1/runner_dev';
 
-/**
- * Script del subproceso: crea la Sequelize y reporta si NO abortó.
- * @param {string} configLiteral
- * @returns {string}
- */
-function childScript(configLiteral) {
+/** Script del subproceso: crea la Sequelize y reporta si NO abortó. */
+function childScript(configLiteral: string): string {
   return `
     const { createSequelize } = await import(${JSON.stringify(connectionUrl)});
     createSequelize(${configLiteral});
@@ -31,12 +29,7 @@ function childScript(configLiteral) {
   `;
 }
 
-/**
- * @param {string} configLiteral
- * @param {Record<string,string>} env
- * @returns {import('./helpers/proc.js').RunResult}
- */
-function probe(configLiteral, env = {}) {
+function probe(configLiteral: string, env: Record<string, string> = {}): RunResult {
   return run('node', ['--input-type=module', '-e', childScript(configLiteral)], {
     cwd: apiDir,
     env: { NODE_ENV: 'test', ...env },
@@ -44,11 +37,7 @@ function probe(configLiteral, env = {}) {
   });
 }
 
-/**
- * @param {import('./helpers/proc.js').RunResult} r
- * @param {string} ctx
- */
-function assertAborted(r, ctx) {
+function assertAborted(r: RunResult, ctx: string): void {
   assert.notEqual(
     r.status,
     0,

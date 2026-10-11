@@ -17,18 +17,17 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { run } from './helpers/proc.js';
+import { run } from '../helpers/proc.js';
 
-const apiDir = fileURLToPath(new URL('../', import.meta.url));
-const connectionUrl = new URL('../src/db/connection.js', import.meta.url).href;
+type RunResult = import('../helpers/proc.js').RunResult;
+type Env = Record<string, string | undefined>;
+
+const apiDir = fileURLToPath(new URL('../../', import.meta.url));
+const connectionUrl = new URL('../../src/db/connection.js', import.meta.url).href;
 
 // Imprime el destino EFECTIVO por nodo de replicación (pg fusiona la config
 // base con el nodo, como hace Sequelize) y el destino base.
-/**
- * @param {string} configLiteral
- * @returns {string}
- */
-function childScript(configLiteral) {
+function childScript(configLiteral: string): string {
   return `
     const { createSequelize } = await import(${JSON.stringify(connectionUrl)});
     const seq = createSequelize(${configLiteral});
@@ -56,12 +55,7 @@ function childScript(configLiteral) {
   `;
 }
 
-/**
- * @param {string} configLiteral
- * @param {Record<string,string|undefined>} [env]
- * @returns {import('./helpers/proc.js').RunResult}
- */
-function probe(configLiteral, env = {}) {
+function probe(configLiteral: string, env: Env = {}): RunResult {
   return run('node', ['--input-type=module', '-e', childScript(configLiteral)], {
     cwd: apiDir,
     env: {
@@ -76,11 +70,7 @@ function probe(configLiteral, env = {}) {
   });
 }
 
-/**
- * @param {import('./helpers/proc.js').RunResult} r
- * @param {string} ctx
- */
-function assertGuardAbort(r, ctx) {
+function assertGuardAbort(r: RunResult, ctx: string): void {
   assert.notEqual(r.status, 0, `${ctx}: debió abortar antes de construir:\n${r.output}`);
   assert.match(
     r.output,
@@ -90,7 +80,7 @@ function assertGuardAbort(r, ctx) {
 }
 
 describe('001: ADV-001 residual — database falsy explícito en replication', () => {
-  const repl = (/** @type {unknown} */ w, /** @type {unknown} */ rr) =>
+  const repl = (w: unknown, rr: unknown) =>
     JSON.stringify({
       database: 'runner_test',
       username: 'runner',
@@ -133,7 +123,7 @@ describe('001: ADV-001-F3 residual — database heredado por PROTOTIPO', () => {
   // propiedades heredadas, así que un nodo cuyo PROTOTIPO lleva
   // database:'runner_dev' conecta a dev aunque hasOwnProperty(node,'database')
   // sea false y la guardia le asigne la base *_test.
-  const replWithNodes = (/** @type {string} */ wNode, /** @type {string} */ rNode) => `
+  const replWithNodes = (wNode: string, rNode: string) => `
     {
       database: 'runner_test',
       username: 'runner',
