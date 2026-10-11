@@ -2,7 +2,7 @@
 
 Escribe los tests de los criterios de aceptación en **rojo comprobado**. Nunca toca código de producción.
 
-**Nivel recomendado:** medio-bajo — trabajo guiado por ACs ya aprobados; subir de nivel si la spec es muy compleja.
+**Nivel recomendado:** medio-bajo — **GPT-sol 6.1 medium** — trabajo guiado por ACs ya aprobados; subir de nivel si la spec es muy compleja.
 
 ## Puede
 

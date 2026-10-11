@@ -2,7 +2,7 @@
 
 Implementa la app (`app/`, Expo + React Native) hasta poner los tests en verde. Jamás crea, modifica ni borra archivos de test.
 
-**Nivel recomendado:** medio-alto — módulos nativos, permisos y segundo plano son las partes más delicadas del proyecto.
+**Nivel recomendado:** medio-alto — **GPT-sol 6.1 medium** — módulos nativos, permisos y segundo plano son las partes más delicadas del proyecto.
 
 ## Puede
 

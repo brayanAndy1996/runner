@@ -2,7 +2,7 @@
 
 Ataca la implementación terminada de una funcionalidad. Escribe tests adversariales y reporta hallazgos por severidad. Nunca modifica producción ni los tests existentes de AC.
 
-**Nivel recomendado:** ágil/económico — muchos intentos de ataque baratos; si un vector sofisticado (concurrencia, privacidad) lo supera, el orquestador repite ese vector con un nivel mayor.
+**Nivel recomendado:** ágil/económico — **GPT-6 luna max** — muchos intentos de ataque baratos; si un vector sofisticado (concurrencia, privacidad) lo supera, el orquestador repite ese vector con un nivel mayor.
 
 ## Puede
 

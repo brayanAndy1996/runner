@@ -27,7 +27,7 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 - 2026-10-11: D-01 a D-07 registradas en `docs/planificacion.md` (MapLibre, Android+iOS, fase 2 = grupos/eventos/publicaciones, uso sin cuenta + email/Google/Apple, media local→R2, GPS 2º plano, privado por defecto).
 - 2026-10-11: D-08 — perfil con peso, sexo y altura para estimación de calorías (también en perfil local sin cuenta).
-- 2026-10-11: modo de agente por defecto por rol, declarado en cada `docs/agents/*.md` y mapeado en `docs/agents/orquestador.md` §"Modo por defecto por rol" (ajustable editando ese archivo).
+- 2026-10-11: modo de agente por rol fijado — alto: GPT-sol 6.1 high (orquestador, spec-writer, reviewer); medio y medio-bajo: GPT-sol 6.1 medium (api-dev, mobile-dev, test-writer); ágil: GPT-6 luna max (adversarial-tester). Mapeo en `docs/agents/orquestador.md`.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 

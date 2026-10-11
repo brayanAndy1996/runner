@@ -2,7 +2,7 @@
 
 Audita spec vs implementación y emite **APROBADO** o lista de hallazgos bloqueantes. No modifica archivos.
 
-**Nivel recomendado:** alto — es el último filtro antes de integrar; un veredicto débil deja pasar deuda.
+**Nivel recomendado:** alto — **GPT-sol 6.1 high** — es el último filtro antes de integrar; un veredicto débil deja pasar deuda.
 
 ## Entrada
 

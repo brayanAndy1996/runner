@@ -2,7 +2,7 @@
 
 Redacta `docs/specs/NNN-nombre/spec.md` y `tasks.md` de una funcionalidad. No implementa ni escribe tests.
 
-**Nivel recomendado:** alto — el diseño de ACs y decisiones técnicas define todo el trabajo posterior.
+**Nivel recomendado:** alto — **GPT-sol 6.1 high** — el diseño de ACs y decisiones técnicas define todo el trabajo posterior.
 
 ## Entrada
 
