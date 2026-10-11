@@ -8,6 +8,16 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 
 ## Estado exacto (2026-10-11)
 
+- **Checkpoint actual:** H-02 aprobado y aplicado por roles: `e1e642b` dependencias app, `fd6b601` tooling TS API, `bcad321` migración de seis regresiones adversariales a `.adversarial.test.ts`.
+- El orquestador reprodujo `ci-local.sh` completo: Docker PostgreSQL16, migraciones dev/test, API **135/135** (50 adversariales), app **2/2**, lint y typecheck ambos; `db-up.sh` nuevamente idempotente. `npm ci`/tests no se ejecutan simultáneamente sobre el mismo paquete.
+- Cobertura actual API, incluyendo fuentes/migraciones/rc: **100 % líneas / 93,20 % ramas / 100 % funciones**; guard **100/94,94/100**, rc **100/100/100**, config/index **100/50/100**. App raíz/layout **100 %** en todas las métricas. No inyectar `DB_NAME` global en la medición: los tests también caracterizan la config development sin conectarla.
+- [CI #34](https://github.com/brayanAndy1996/runner/actions/runs/38167987998) **completed successfully** para `bcad321`. Auditoría independiente final sobre ese código: **cero nuevos críticos/altos abiertos**.
+- Audit final `--prefer-online`: API 2 moderadas; app 13 moderadas/51 altas/0 críticas (64 entradas incluyendo ancestros), mismas cuatro hojas aceptadas en ADR 0002. Snapshot previo 66: dos ancestros peer de RN adicionales, no advisory nuevo ni arreglo de seguridad. `decode-uri-component@0.5.0` corregido; renderer1.2/reconciler0.33 y Reanimated4.5.1/Worklets0.10.1 verificados en instalación/Expo check, no en build nativo.
+- **Siguiente paso:** reviewer independiente SWE-2 High debe emitir `APROBADO` sobre el código final y logs; luego cerrar DoD, actualizar este estado y abrir PR. El reviewer anterior `BLOQUEADO` es histórico, no la revisión del estado actual. No hay permiso de merge.
+- Deuda aceptada exclusivamente por ADR 0002–0004; los supuestos de specs 002–011 siguen pendientes. No arrancar 002 ni dar por implementados tracking, auth o media.
+
+## Historial anterior (no representa los pendientes actuales)
+
 - Planificación integrada en `main` con permiso de Bryan; spec 001 aprobada. Rama actual: `feat/001-andamiaje`. No hay permiso para mergear el andamiaje.
 - Decisiones del usuario: `docs/planificacion.md` §1 (D-01 a D-08).
 - Preparación API integrada (`67f1802`, sesión `f4fcace13a274c7c96bc2f8388bbe954`): dependencias/runners sin fuente ni tests; todavía no hay rojo/verde.
@@ -38,11 +48,11 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 - Refuerzo integrado del test-writer: `b03819763cc6d0769a7d1aadaa0613caf38127cb` y `e4a1fce21612b3fbb659026744f92bcec4191527`, solo `api/tests/regression-cli-rc.test.js`: preflight propio `.sequelizerc`, export-first de `config.js`, symlink a rc parcialmente cargado. El orquestador revisó diff y reprodujo pipeline completo real en `e4a1fce`: API **135/135**, app **2/2**, lint/typecheck ambos, migraciones dev/test y `db-up.sh` repetido idempotente. Cobertura API actual **100 % líneas / 93,20 % ramas / 100 % funciones**; `.sequelizerc` **100/100/100**, guard **100/94,94/100**, config/index **100/50/100**; app raíz/layout **100 %**. No hubo cambios en instrumentación. CI del SHA de tests: https://github.com/brayanAndy1996/runner/actions/runs/38166143316 — `completed/success`. Producción/dependencias/scripts/CI idénticos al código del re-test `a0518ae`; probes únicamente offline/test, sin acceso a `runner_dev` real.
 - **Nueva autorización:** Bryan seleccionó **«Aprobar los siete puntos»** de H-02. ADR 0001–0005 registran ajustes móviles, deuda temporal acotada, frontera CLI/factory, bajos/notas y convención adversarial estricta `.ts`. Las menciones previas de dependencias/deuda pendientes son históricas; no volver a solicitarlas como si no hubiera respuesta. No autoriza merge.
 - **Siguiente acción:** mobile-dev aplica solo dependencias aprobadas; API-dev prepara tooling TS de tests y test-writer reubica regresiones sin perder aserciones. Revalidar suites/cobertura/migraciones/Docker/lint/typecheck/CI y auditoría de dependencias/adversarial; después reviewer independiente debe emitir `APROBADO` para verificar DoD y abrir PR. F5 queda aceptado como limitación, F8/F9 como deuda y F11/F7/F12 como notas bajo las condiciones de sus ADR.
-- Auditor verificó además RNTL14 → test-renderer1.3/reconciler0.34 incompatible por peer con React19.2. Tabla oficial recomienda pin test-renderer1.2. Se añadió a la pregunta pendiente a Bryan; NO cambiar dependencias sin ADR/aprobación.
-- Auditor de dependencias `e0ccbf941b504d23977c374cce13bb96` terminó lectura inicial. Se preguntó a Bryan por override `decode-uri-component@0.5.x` con ADR y aceptación de deuda restante; no hay respuesta todavía. No ejecutar downgrade mayor sugerido por npm audit.
-- Reanimated/Worklets transitivas instaladas (4.7.1/0.13.0) difieren de la matriz Expo57 (4.5.1/0.10.1); la alineación también está pendiente de autorización y ADR. `expo install --check` dio conforme pero no validó esa combinación transitiva ni un build nativo.
-- La aprobación del entorno Node24/instalaciones incrementales no autoriza cambios de dependencias. Ningún medio/bajo ni frontera del CLI externo se da por deuda aceptada.
-- El reviewer previo emitió `BLOQUEADO`; no hay `APROBADO` ni PR de andamiaje. El quinto ciclo y su refuerzo de tests tienen pipeline, cobertura, CI y cierre adversarial comprobados; aún faltan decisiones, revisión independiente y DoD. Publicar PR solo al cumplir las puertas; nunca mergear sin nueva autorización.
+- Auditor verificó RNTL14 → test-renderer1.3/reconciler0.34 incompatible con React19.2. El pin test-renderer1.2 está aprobado por ADR 0001; falta aplicar/verificar.
+- Override `decode-uri-component@0.5.x` aprobado por ADR 0001; aceptación temporal de los avisos restantes acotada por ADR 0002. No ejecutar downgrade mayor sugerido por npm audit ni `npm audit fix`.
+- Reanimated/Worklets transitivas previas (4.7.1/0.13.0) difieren de la matriz Expo57 (4.5.1/0.10.1). Alineación aprobada por ADR 0001; Expo check/Jest no acreditan build nativo.
+- La autorización H-02 es independiente de la aprobación anterior del entorno Node24. Solo los riesgos delimitados por los ADR quedan aceptados; nuevos advisories o cambios de exposición exigen revaluación.
+- El reviewer previo emitió `BLOQUEADO`; no hay `APROBADO` ni PR de andamiaje. El quinto ciclo y su refuerzo de tests tienen pipeline, cobertura, CI y cierre adversarial comprobados; los ajustes H-02 necesitan nueva validación, revisión independiente y DoD. Publicar PR solo al cumplir las puertas; nunca mergear sin nueva autorización.
 - Sesiones hijas en máquinas separadas, secuenciales en esta rama y con commits separados por rol. Fallback real disponible: SWE-2 Medium para desarrollo/tests/adversarial y SWE-2 High para reviewer; SOL/Luna siguen siendo las preferencias documentadas, no modelos ejecutados.
 
 ## Mapa del repo
@@ -51,7 +61,7 @@ Red social para runners/caminantes: recorridos GPS con mapa (MapLibre), fotos/vi
 app/        Expo SDK 57 + TS + expo-router + dev-client; raíz Runner y layout Stack
 api/        Express 5 + Sequelize 6 + Postgres 16, ESM; health/config/factory/guardia
 docs/       metodología completa: planificacion (R-xx, D-xx), agents, specs NNN, decisions, api/openapi.yaml, PROGRESS, CONTINUAR
-scripts/    db-up.sh, ci-local.sh (pipeline/CI verdes en e4a1fce; producción a0518ae, adversarial cero críticos/altos)
+scripts/    db-up.sh, ci-local.sh (pipeline/CI finales verdes en bcad321; producción a0518ae)
 CONSTITUCION.md  stack exacto, comandos, convenciones, DoD
 ```
 

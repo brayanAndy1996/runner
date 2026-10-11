@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** quinto fix F2-R5 verificado; Bryan aprobó los siete puntos H-02. Ajustes de dependencias y convención adversarial por aplicar; falta revalidación y reviewer `APROBADO`, no cumple DoD.
+- **Fase:** los siete puntos H-02 aplicados y revalidados; auditoría final sin críticos/altos nuevos abiertos. Falta el reviewer `APROBADO` para cerrar el DoD.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** aplicar ADR 0001–0005 por roles, revalidar suites/cobertura/auditoría/CI y obtener revisión `APROBADO` antes del PR. Merge no autorizado.
+- **Siguiente acción:** revisión independiente sobre el código de `bcad321` y este checkpoint documental; después verificar DoD y abrir el PR. Merge no autorizado.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | H-02 aprobado; aplicar ajustes y revalidar antes de reviewer/DoD/PR |
+| 001 | Andamiaje | H-02 aplicado; pipeline, cobertura, CI y adversarial final verdes; pendiente reviewer/DoD/PR |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -32,6 +32,8 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - 2026-10-11: Bryan autorizó integrar el PR de planificación en `main` y arrancar spec 001 con el orquestador y sesiones hijas. El permiso no incluye el merge del futuro PR de andamiaje.
 
 ## Ejecución de spec 001
+
+Registro cronológico: cada checkpoint describe su estado de entonces; los pendientes actuales figuran en «Estado actual» y «Verificación final H-02».
 
 - Preparación de dependencias anterior al rojo según la excepción de CONSTITUCION.md §4. No se anticipan `/health`, guardia, migraciones, pantalla raíz ni scripts funcionales antes del test-writer.
 - Versiones comprobadas en npm: Expo 57.0.27, Express 5.3.0, React Native 0.86.3 y MapLibre 11.5.0 disponibles; se mantienen los rangos aprobados.
@@ -106,12 +108,26 @@ Bryan seleccionó explícitamente **«Aprobar los siete puntos»** tras el cierr
 1. Override compatible de `decode-uri-component@^0.5.x` con ADR.
 2. Pin de `test-renderer@~1.2.0` con ADR (el reporte del reviewer lo llamó `react-native-test-renderer`; ese paquete no está instalado, el real es `test-renderer`).
 3. Alineación Reanimated/Worklets con la matriz Expo 57, con ADR.
-4. Aceptar/documentar como deuda los advisories restantes de `braces`, `node-forge`, `sprintf-js` y `uuid`, o corregirlos de forma compatible.
-5. Elegir política para CLI externo que no ejecuta código propio (wrapper obligatorio, limitación documentada o endurecimiento posterior); incluye F5, uso de la factory por convención: `new Sequelize` directo fuera de ella evita la guardia.
-6. Corregir o aceptar explícitamente los bajos/notas F8, F9, F11, F7 y F12.
-7. Reubicar/renombrar regresiones adversariales según `CONSTITUCION.md` §5 o aprobar una enmienda/excepción explícita para API JavaScript. No modificar la constitución para eludir el gate.
+4. Aceptar/documentar temporalmente como deuda los advisories restantes de `braces`, `node-forge`, `sprintf-js` y `uuid`, bajo las condiciones de ADR 0002.
+5. Aceptar la limitación documentada del CLI externo que no ejecuta código propio; incluye F5, uso de la factory por convención: `new Sequelize` directo fuera de ella evita la guardia. No añadir wrapper obligatorio en 001.
+6. Aceptar F8/F9 como deuda baja y registrar F11/F7/F12 como notas con seguimiento definido en ADR 0004.
+7. Reubicar/convertir regresiones adversariales según `CONSTITUCION.md` §5: `.adversarial.test.ts`, sin enmienda ni excepción.
 
-Se ejecuta el paquete propuesto: ajustes compatibles de los puntos 1–3 (ADR 0001), deuda temporal acotada del punto 4 (ADR 0002), limitación documentada del CLI/factory del punto 5 (ADR 0003), deuda baja/notas del punto 6 (ADR 0004) y convención estricta `.adversarial.test.ts` del punto 7, sin excepción ni modificación constitucional (ADR 0005).
+Se aplicó el paquete: ajustes compatibles de los puntos 1–3 (ADR 0001), deuda temporal acotada del punto 4 (ADR 0002), limitación documentada del CLI/factory del punto 5 (ADR 0003), deuda baja/notas del punto 6 (ADR 0004) y convención estricta `.adversarial.test.ts` del punto 7, sin excepción ni modificación constitucional (ADR 0005).
+
+### Verificación final H-02 (2026-10-11)
+
+- **Roles separados:** mobile-dev `e1e642b` modifica únicamente manifiesto/lockfile app; API-dev `fd6b601` únicamente tooling/parser/configs API; test-writer `bcad321` únicamente seis regresiones migradas a `api/tests/adversarial/*.adversarial.test.ts`. La producción API sigue siendo la auditada en `a0518ae`.
+- **Dependencias instaladas:** `decode-uri-component@0.5.0`, `test-renderer@1.2.0` deduplicado para RNTL (`react-reconciler@0.33.0`), Reanimated `4.5.1` y Worklets `0.10.1`. `npm ci`, `npm ls` específico, `expo install --check`, tests, lint y typecheck conformes. Esto no acredita un build nativo.
+- **Migración sin debilitar tests:** 135 casos API, incluidos 50 adversariales, conservados. El orquestador comparó por AST las expresiones/argumentos de todas las llamadas `assert.*` antes/después en los seis archivos: idénticos. Los seis `.ts` pertenecen al programa TSC; sin ignores/casts ni exclusiones nuevas. Los `coverage-*.test.js` son pruebas unitarias positivas, no hallazgos ADV.
+- **Pipeline reproducido por el orquestador en `bcad321`:** `bash scripts/ci-local.sh`, exit 0: instalaciones separadas secuenciales, PostgreSQL 16, migraciones development/test, **135/135 API**, **2/2 app**, lint y typecheck en ambos paquetes. `db-up.sh` repetido, idempotente.
+- **Cobertura final API:** Node 24 con `--experimental-test-coverage`, incluyendo `src/**`, `migrations/**` y `.sequelizerc`: **100 % líneas / 93,20 % ramas / 100 % funciones**. Guardia **100/94,94/100**, `.sequelizerc` **100/100/100**, config/index **100/50/100**, resto funcional **100 %**. Se informa la cobertura de ramas sin ocultarla; no se excluyeron fuentes funcionales. La medición canónica usa `NODE_ENV=test` sin sobrescribir globalmente `DB_NAME`: una primera invocación del orquestador con `DB_NAME=runner_test` alteró la caracterización de development y se descartó, sin modificar código ni pruebas.
+- **Cobertura final app:** `npm test -- --coverage --runInBand`, **2/2**, raíz/layout **100 %** statements/ramas/funciones/líneas.
+- **CI del código final:** [CI #34](https://github.com/brayanAndy1996/runner/actions/runs/38167987998), commit `bcad3218857b9838da1ec89fa05952042ccd6b34`, estado **completed successfully** comprobado en GitHub.
+- **Auditoría de dependencias:** consulta final `npm audit --json --prefer-online`: API **2 moderadas, 0 altas, 0 críticas**; app **13 moderadas, 51 altas, 0 críticas**, 64 entradas contando ancestros. Mismas cuatro hojas de ADR 0002; no aparece `decode-uri-component`. El snapshot anterior de 66 entradas difiere solo por dos ancestros peer de React Native (`@testing-library/react-native`, `react-native-view-shot`); no se interpreta la variación como una nueva corrección ni un cambio de exposición. No se ejecutó `npm audit fix`.
+- **Adversarial independiente:** sesión [e0ccbf9](https://app.devin.ai/sessions/e0ccbf941b504d23977c374cce13bb96), auditoría del SHA `bcad321`: revalida precedencias URL/CLI, replicación, herencia/falsy, alias, precarga/export-first/caché/symlink y controles seguros offline. **Cero hallazgos nuevos críticos/altos abiertos**; riesgos de dependencias y límites solo aceptados según ADR 0002–0004. Probes contra puerto cerrado, nunca contra `runner_dev` real.
+- **AC-01…AC-10:** conservan pruebas nombradas; AC-01/03/07 suplementados por Docker/migraciones/pipeline reales y AC-08 por el CI remoto. OpenAPI sigue sincronizado con `GET /health`.
+- **Pendiente:** reviewer independiente debe leer código/logs y emitir `APROBADO`; solo entonces el orquestador cerrará DoD y publicará PR. Nada de tracking/auth/media, builds nativos, EAS ni pruebas UI se da por implementado o verificado.
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
@@ -125,4 +141,4 @@ Se ejecuta el paquete propuesto: ajustes compatibles de los puntos 1–3 (ADR 00
 
 ## Deuda técnica
 
-- Sin deuda aceptada por Bryan todavía. Advisories y hallazgos no bloqueantes están pendientes de decisión, no de aceptación implícita.
+- Aceptación explícita H-02: advisories acotados (ADR 0002), frontera CLI/factory (ADR 0003), F8/F9 y notas F11/F7/F12 (ADR 0004). Revaluar en sus hitos; ninguna aceptación genérica de advisories o hallazgos nuevos.

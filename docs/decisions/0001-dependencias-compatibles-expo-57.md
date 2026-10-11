@@ -1,6 +1,6 @@
 # ADR 0001 — Dependencias compatibles con Expo 57
 
-- Estado: aprobado; pendiente de aplicar y verificar.
+- Estado: aprobado y aplicado en `e1e642b`; instalación, versiones, tests, lint, typecheck y Expo check verificados. Build nativo pendiente.
 - Fecha: 2026-10-11.
 - Autorización: Bryan seleccionó **«Aprobar los siete puntos»** en esta sesión, puntos 1–3 de H-02.
 

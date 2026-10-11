@@ -1,6 +1,6 @@
 # ADR 0005 — Convención y tooling de pruebas adversariales
 
-- Estado: aprobado; pendiente de aplicar y verificar.
+- Estado: aprobado y aplicado: tooling `fd6b601`, migración por test-writer `bcad321`. Validación final del orquestador y reviewer exigida.
 - Fecha: 2026-10-11.
 - Autorización: Bryan seleccionó **«Aprobar los siete puntos»**, punto 7 de H-02.
 
@@ -20,6 +20,8 @@ Node 24 ejecuta TypeScript mediante eliminación nativa de tipos; TypeScript ya 
 
 Como soporte de desarrollo del punto 7, usar `@typescript-eslint/parser@~8.71.1`, la misma versión ya instalada por el tooling de la app: compatible con Node 24, ESLint 9 y TypeScript 5.9 según sus peers. Es una dependencia exclusivamente de desarrollo, no del runtime de la API. No se añade un loader, framework de tests ni dependencia de producción.
 
+El lint conserva las reglas JS y añade parser para `.ts`. Exclusivamente en TypeScript, `no-undef` se sustituye por la comprobación de nombres de `tsc --noEmit` con `strict`, que reconoce los tipos; la regla JS no puede hacerlo correctamente. Esto no autoriza `@ts-ignore`, `any` indiscriminado, exclusión de archivos ni omitir el gate de typecheck. Las reglas de JavaScript y el control semántico efectivo se mantienen.
+
 API-dev prepara manifiesto/lockfile y configuración sin tocar tests ni fuentes de dominio. Después test-writer migra las pruebas sin modificar producción. Ambos usan commits separados por rol.
 
 ## Verificación
@@ -33,4 +35,5 @@ API-dev prepara manifiesto/lockfile y configuración sin tocar tests ni fuentes 
 
 - [TypeScript en Node.js](https://nodejs.org/api/typescript.html).
 - [Parser de typescript-eslint](https://typescript-eslint.io/packages/parser/).
+- [Uso de `no-undef` con TypeScript](https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors).
 - [Sesión y aprobación del usuario](https://app.devin.ai/sessions/034a530278564a678a97d3c3a0a43334).

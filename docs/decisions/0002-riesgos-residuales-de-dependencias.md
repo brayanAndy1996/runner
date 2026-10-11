@@ -12,14 +12,22 @@ Antes de los ajustes, `npm audit` reportó 53 altas y 16 moderadas propagadas en
 
 Aceptar y documentar temporalmente los avisos restantes identificados para:
 
-| Hoja | Uso observado | Condición |
+| Hoja y versión fijada | Cadena / uso observado | Condición |
 | --- | --- | --- |
-| `braces` | Patrones en herramientas, vía `micromatch` | No exponer procesamiento de patrones no confiables como función del producto |
-| `node-forge` | Herramientas Expo de firma/prebuild | Revisar antes de firma y builds de distribución |
-| `sprintf-js` | Herramientas de tests Jest | Revaluar si alcanza código del producto o entradas no confiables |
-| `uuid` | Árboles Sequelize/xcode | Revisar antes de usar identificadores para seguridad o publicación |
+| `braces@3.0.3` | `micromatch@4.0.8`, patrones en herramientas de app | No exponer procesamiento de patrones no confiables como función del producto |
+| `node-forge@1.4.0` | `@expo/cli@57.0.28` y `@expo/code-signing-certificates@0.0.6`, firma/prebuild | Revisar antes de firma y builds de distribución |
+| `sprintf-js@1.0.3` | `@istanbuljs/load-nyc-config → argparse@1.0.10`, herramientas de cobertura | Revaluar si alcanza código del producto o entradas no confiables |
+| `uuid@8.3.2` (API), `7.0.3` (app) | `sequelize@6.37.8` (runtime API), `xcode@3.0.1` (tooling app) | Revisar antes de usar identificadores para seguridad o publicación |
 
 No hay autorización genérica para aceptar advisories nuevos, críticos ni otros paquetes. `decode-uri-component` se corrige según ADR 0001; no queda incluido en esta aceptación.
+
+## Auditoría posterior a los ajustes
+
+El orquestador reprodujo `npm audit --json` y contrastó los lockfiles de `e1e642b`/`fd6b601`: API **2 moderadas, 0 altas, 0 críticas**; app **13 moderadas, 53 altas, 0 críticas** (66 entradas contando ancestros). El override elimina `decode-uri-component` de los advisories; no elimina los avisos altos de las otras hojas. El parser de tests no añadió hojas vulnerables nuevas.
+
+Advisories residuales: [braces, alta](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), [node-forge, alta](https://github.com/advisories/GHSA-86w9-cpqp-85rv), [sprintf-js, moderada](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) y [uuid, moderada](https://github.com/advisories/GHSA-w5hq-g745-h8pq). La aceptación se limita al uso actual; no desactiva auditorías ni hace desaparecer su severidad publicada.
+
+Reconsulta final `npm audit --json --prefer-online` y auditoría independiente tras `npm ci` en `bcad321`: API **2 moderadas**; app **13 moderadas, 51 altas, 0 críticas**, 64 entradas. La comparación cruda con el snapshot anterior identifica únicamente dos claves adicionales propagadas por peer de React Native: `@testing-library/react-native` y `react-native-view-shot`. Las cuatro hojas/advisories y los lockfiles son iguales; también varía la metadata de rangos/fixes de ancestros. No atribuir el delta a `decode-uri-component`, no considerar que la variación resuelva una vulnerabilidad y no aplicar las versiones incompatibles que npm sugiere.
 
 ## Seguimiento
 
