@@ -2,6 +2,10 @@
 // En NODE_ENV=test toda conexión Sequelize debe apuntar a una BD que termine
 // en "_test"; si no, el proceso aborta ANTES de intentar conectar.
 
+import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+
 /**
  * Extrae el nombre de la base de datos de una URL postgres(s).
  * @param {string|undefined} url
@@ -63,9 +67,11 @@ export function assertTestDatabaseName(name) {
  */
 function replicationNodeName(node, base) {
   // 'database' explícito falsy ('', null, 0, false) NO hereda: Sequelize lo
-  // conserva (_.defaults) y pg cae a PGDATABASE — solo la clave ausente
-  // hereda la base de forma segura.
-  if (Object.prototype.hasOwnProperty.call(node, 'database')) {
+  // conserva (_.defaults) y pg cae a PGDATABASE. Y el _.pick del
+  // connectionManager incluye propiedades HEREDADAS del prototipo del nodo,
+  // así que un `database` vía prototipo también es efectivo: solo la clave
+  // ausente (ni propia ni heredada) hereda la base de forma segura.
+  if ('database' in node) {
     return /** @type {string|undefined} */ (node.database ?? undefined) || undefined;
   }
   if (typeof node.url === 'string' && node.url.length > 0) {
@@ -114,6 +120,47 @@ export function cliFlagValue(argv, name) {
     (a) => typeof a === 'string' && a.startsWith(`${name}=`),
   );
   return eq ? eq.slice(name.length + 1) : undefined;
+}
+
+/**
+ * Objeto rc efectivo del CLI: `--options-path` o cwd/.sequelizerc. sequelize-cli
+ * lo alimenta a yargs.config(), así que sus claves (p.ej. `env`) actúan como
+ * flags implícitos. Se carga con require (los rc son CommonJS) y se ignora el
+ * propio .sequelizerc del proyecto para no re-ejecutar el preflight (ciclo:
+ * el rc hace preflight → require(config.js) → config.js relee el mismo rc).
+ * @param {string[]} argv
+ * @param {string|undefined} [ownRcPath] ruta del .sequelizerc propio a ignorar
+ * @returns {Record<string, unknown>}
+ */
+export function cliRcObject(argv, ownRcPath) {
+  const optPath = cliFlagValue(argv, '--options-path');
+  const rcPath = optPath
+    ? path.resolve(process.cwd(), optPath)
+    : path.resolve(process.cwd(), '.sequelizerc');
+  if (!existsSync(rcPath)) return {};
+  if (ownRcPath && path.resolve(ownRcPath) === rcPath) return {};
+  try {
+    const require = createRequire(import.meta.url);
+    const loaded = require(rcPath);
+    return loaded && typeof loaded === 'object' ? loaded : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Entorno efectivo del CLI con la precedencia real de yargs:
+ * flag explícito --env > clave `env` del rc > NODE_ENV.
+ * @param {string[]} argv
+ * @param {string|undefined} [ownRcPath]
+ * @returns {string}
+ */
+export function cliEffectiveEnv(argv, ownRcPath) {
+  const flag = cliFlagValue(argv, '--env');
+  if (typeof flag === 'string' && flag.length > 0) return flag;
+  const rc = cliRcObject(argv, ownRcPath);
+  if (typeof rc.env === 'string' && rc.env.length > 0) return rc.env;
+  return process.env.NODE_ENV ?? 'development';
 }
 
 /**

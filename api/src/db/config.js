@@ -1,7 +1,8 @@
 // Configuración Sequelize por entorno, consumida por sequelize-cli
 // (.sequelizerc apunta aquí) y por src/index.js. ESM: sequelize-cli la
 // carga con import dinámico; .sequelizerc sigue siendo CommonJS.
-import { assertCliTarget, cliFlagValue } from './guard.js';
+import { fileURLToPath } from 'node:url';
+import { assertCliTarget, cliEffectiveEnv, cliFlagValue } from './guard.js';
 
 const base = {
   username: process.env.DB_USER ?? 'runner',
@@ -35,7 +36,11 @@ const config = {
 if (process.env.NODE_ENV === 'test') {
   const argv = process.argv.slice(2);
   const urlArg = cliFlagValue(argv, '--url');
-  const envArg = cliFlagValue(argv, '--env') ?? 'test';
+  // Entorno EFECTIVO del CLI: flag --env > clave `env` del rc (cwd o
+  // --options-path) > NODE_ENV. El propio .sequelizerc se ignora al leer el
+  // rc para no re-ejecutar su preflight (ciclo require).
+  const ownRc = fileURLToPath(new URL('../../.sequelizerc', import.meta.url));
+  const envArg = cliEffectiveEnv(argv, ownRc);
   const target =
     typeof urlArg === 'string' && urlArg.length > 0
       ? { url: urlArg }

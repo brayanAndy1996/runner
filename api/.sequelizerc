@@ -10,7 +10,8 @@ if (process.env.NODE_ENV === 'test') {
   const guard = require('./src/db/guard.js');
   const argv = process.argv.slice(2);
   const urlArg = guard.cliFlagValue(argv, '--url');
-  const envArg = guard.cliFlagValue(argv, '--env') ?? process.env.NODE_ENV;
+  // Entorno EFECTIVO del CLI: --env > rc.env (--options-path o cwd rc) > NODE_ENV.
+  const envArg = guard.cliEffectiveEnv(argv, __filename);
   const configArg = guard.cliFlagValue(argv, '--config');
   let target;
   if (typeof urlArg === 'string' && urlArg.length > 0) {
