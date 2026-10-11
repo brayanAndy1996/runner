@@ -25,7 +25,11 @@ const CLI_ENV = {
   DB_PORT: '1',
   DB_USER: 'runner',
   DB_PASSWORD: 'runner',
-  DB_NAME: 'runner_test',
+  // DB_NAME/DATABASE_URL ausentes a propósito (undefined elimina la clave en
+  // spawn): development resuelve runner_dev y test resuelve runner_test.
+  // No usar `delete` sobre process.env — reheredaría un valor del padre.
+  DB_NAME: undefined,
+  DATABASE_URL: undefined,
 };
 
 /**
@@ -35,7 +39,6 @@ const CLI_ENV = {
  */
 function cli(args, extra = {}) {
   const env = /** @type {Record<string,string|undefined>} */ ({ ...process.env, ...CLI_ENV });
-  delete env.DATABASE_URL;
   return run('npx', ['sequelize', ...args], {
     cwd: apiDir,
     env: { ...env, ...extra },
@@ -84,6 +87,15 @@ describe('001: ADV-001-F2 guardia del CLI sequelize', () => {
       }),
       '--env production',
     );
+  });
+
+  test('ADV-001-F2: control válido — --env development con DB_NAME=runner_test muere por red SIN guardia', () => {
+    // El nombre del entorno del CLI puede ser "development" mientras el
+    // destino efectivo es *_test: seguro, no debe abortar.
+    const r = cli(['db:migrate:status', '--env', 'development'], { DB_NAME: 'runner_test' });
+    assert.notEqual(r.status, 0);
+    assert.match(r.output, /ECONNREFUSED|ConnectionRefusedError|connect/i);
+    assert.doesNotMatch(r.output, /Guardia de tests/);
   });
 
   test('ADV-001-F2: control válido — --env test llega al intento de conexión (no aborta por guardia)', () => {
