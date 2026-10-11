@@ -16,6 +16,8 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - status
                 properties:
                   status:
                     type: string
