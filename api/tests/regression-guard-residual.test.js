@@ -41,8 +41,14 @@ function childScript(configLiteral) {
         ...(rep.read ?? []),
         ...(rep.write ? [rep.write] : []),
       ];
+      // Semántica real de conexión: _.pick incluye propiedades HEREDADAS del
+      // nodo (prototipo); un spread {...n} las descartaría → falso verde.
+      // Solo la clave AUSENTE (ni propia ni heredada) hereda la base.
       const dbs = nodes.map(
-        (n) => new pg.Client({ ...seq.config, ...n }).connectionParameters.database,
+        (n) =>
+          new pg.Client({
+            database: 'database' in n ? n.database : seq.config.database,
+          }).connectionParameters.database,
       );
       console.log('NODE_DBS=' + JSON.stringify(dbs));
     }
@@ -118,6 +124,53 @@ describe('001: ADV-001 residual — database falsy explícito en replication', (
     );
     assert.equal(r.status, 0, `nodos heredados *_test son válidos:\n${r.output}`);
     assert.match(r.output, /EFFECTIVE_DB=runner_test/);
+    assert.match(r.output, /NODE_DBS=\["runner_test","runner_test"\]/);
+  });
+});
+
+describe('001: ADV-001-F3 residual — database heredado por PROTOTIPO', () => {
+  // Verificado offline por el orquestador: _.pick del connectionManager incluye
+  // propiedades heredadas, así que un nodo cuyo PROTOTIPO lleva
+  // database:'runner_dev' conecta a dev aunque hasOwnProperty(node,'database')
+  // sea false y la guardia le asigne la base *_test.
+  const replWithNodes = (/** @type {string} */ wNode, /** @type {string} */ rNode) => `
+    {
+      database: 'runner_test',
+      username: 'runner',
+      dialect: 'postgres',
+      replication: {
+        write: Object.assign(Object.create(${wNode}), { host: '127.0.0.1', port: 1 }),
+        read: [Object.assign(Object.create(${rNode}), { host: '127.0.0.1', port: 1 })],
+      },
+    }`;
+
+  test('ADV-001-F3: write hereda database=runner_dev por prototipo debe abortar', () => {
+    assertGuardAbort(
+      probe(replWithNodes("{ database: 'runner_dev' }", "{ database: 'runner_test' }")),
+      'write prototipo dev',
+    );
+  });
+
+  test('ADV-001-F3: read hereda database=runner_dev por prototipo debe abortar', () => {
+    assertGuardAbort(
+      probe(replWithNodes("{ database: 'runner_test' }", "{ database: 'runner_dev' }")),
+      'read prototipo dev',
+    );
+  });
+
+  test('ADV-001-F3: control — prototipos *_test y nodo sin database son válidos', () => {
+    const r = probe(
+      `{
+        database: 'runner_test',
+        username: 'runner',
+        dialect: 'postgres',
+        replication: {
+          write: Object.assign(Object.create({ database: 'runner_test' }), { host: '127.0.0.1', port: 1 }),
+          read: [{ host: '127.0.0.1', port: 1 }],
+        },
+      }`,
+    );
+    assert.equal(r.status, 0, `destinos *_test (propio/heredado/ausente) son válidos:\n${r.output}`);
     assert.match(r.output, /NODE_DBS=\["runner_test","runner_test"\]/);
   });
 });
