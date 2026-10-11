@@ -133,6 +133,14 @@ export function cliFlagValue(argv, name) {
 }
 
 /**
+ * Entorno ambiguo: el rc está AÚN en carga (precargó config.js antes de
+ * exportar), así que su `env` final es desconocido en este punto. Los
+ * invocadores deben fallar cerrado con assertTestDatabaseName(undefined).
+ * @type {string}
+ */
+export const RC_ENV_AMBIGUOUS = '__runner_rc_env_ambiguous__';
+
+/**
  * Objeto rc efectivo del CLI: `--options-path` o cwd/.sequelizerc. sequelize-cli
  * lo alimenta a yargs.config(), así que sus claves (p.ej. `env`) actúan como
  * flags implícitos. Se carga con require (los rc son CommonJS) y se ignora el
@@ -151,6 +159,14 @@ export function cliRcObject(argv, ownRcPath) {
   if (ownRcPath && path.resolve(ownRcPath) === rcPath) return {};
   try {
     const require = createRequire(import.meta.url);
+    // Clave canónica del caché de módulos (realpath, resuelve symlinks): un
+    // rc aún en carga —precargó config.js antes de exportar— tiene entrada
+    // con `loaded === false` y exports parciales; su `env` es ambiguo.
+    const resolved = require.resolve(rcPath);
+    const cached = require.cache?.[resolved];
+    if (cached && !cached.loaded) {
+      return { env: RC_ENV_AMBIGUOUS };
+    }
     const loaded = require(rcPath);
     return loaded && typeof loaded === 'object' ? loaded : {};
   } catch {

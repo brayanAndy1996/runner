@@ -12,6 +12,10 @@ if (process.env.NODE_ENV === 'test') {
   const urlArg = guard.cliFlagValue(argv, '--url');
   // Entorno EFECTIVO del CLI: --env > rc.env (--options-path o cwd rc) > NODE_ENV.
   const envArg = guard.cliEffectiveEnv(argv, __filename);
+  if (envArg === guard.RC_ENV_AMBIGUOUS) {
+    // rc aún en carga: env desconocido → fail-closed.
+    guard.assertTestDatabaseName(undefined);
+  }
   const configArg = guard.cliFlagValue(argv, '--config');
   let target;
   if (typeof urlArg === 'string' && urlArg.length > 0) {

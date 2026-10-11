@@ -2,7 +2,13 @@
 // (.sequelizerc apunta aquí) y por src/index.js. ESM: sequelize-cli la
 // carga con import dinámico; .sequelizerc sigue siendo CommonJS.
 import { fileURLToPath } from 'node:url';
-import { assertCliTarget, cliEffectiveEnv, cliFlagValue } from './guard.js';
+import {
+  RC_ENV_AMBIGUOUS,
+  assertCliTarget,
+  assertTestDatabaseName,
+  cliEffectiveEnv,
+  cliFlagValue,
+} from './guard.js';
 
 const base = {
   username: process.env.DB_USER ?? 'runner',
@@ -41,6 +47,11 @@ if (process.env.NODE_ENV === 'test') {
   // rc para no re-ejecutar su preflight (ciclo require).
   const ownRc = fileURLToPath(new URL('../../.sequelizerc', import.meta.url));
   const envArg = cliEffectiveEnv(argv, ownRc);
+  if (envArg === RC_ENV_AMBIGUOUS) {
+    // El rc precargó este config antes de exportar: su env es desconocido y
+    // podría ser no-test → fallar cerrado antes de cualquier conexión.
+    assertTestDatabaseName(undefined);
+  }
   const target =
     typeof urlArg === 'string' && urlArg.length > 0
       ? { url: urlArg }
