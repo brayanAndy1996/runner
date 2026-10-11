@@ -11,6 +11,6 @@
     "types": ["node"],
     "baseUrl": "."
   },
-  "include": ["src/**/*.js", "tests/**/*.js", "migrations/**/*.js", "*.config.js"],
+  "include": ["src/**/*.js", "tests/**/*.js", "tests/**/*.ts", "migrations/**/*.js", "*.config.js"],
   "exclude": ["node_modules"]
 }

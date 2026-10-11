@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node --env-file=.env src/index.js",
-    "test": "NODE_ENV=test node --env-file-if-exists=.env.test --test --test-concurrency=1 \"tests/**/*.test.js\"",
+    "test": "NODE_ENV=test node --env-file-if-exists=.env.test --test --test-concurrency=1 \"tests/**/*.test.{js,ts}\"",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:migrate": "sequelize db:migrate"
@@ -24,6 +24,7 @@
     "@types/express": "~5.0.6",
     "@types/node": "~26.6.5",
     "@types/supertest": "~7.2.1",
+    "@typescript-eslint/parser": "~8.71.1",
     "eslint": "~9.39.5",
     "globals": "~17.13.0",
     "sequelize-cli": "~6.6.5",
