@@ -17,7 +17,7 @@ describe('001: pantalla raíz de la app', () => {
       const msg = err instanceof Error ? err.message : String(err);
       throw new Error(`app/src/app/index.tsx no existe o no se puede importar: ${msg}`);
     }
-    render(<Root />);
+    await render(<Root />);
     await screen.findByText('Runner');
   });
 });
