@@ -1,0 +1,38 @@
+// CommonJS a propósito: sequelize-cli lo carga con require (ver CONSTITUCION.md §5).
+const path = require('node:path');
+
+// Preflight de la guardia de tests (ADV-001-F2): con NODE_ENV=test, validar el
+// destino EFECTIVO del CLI —--env/--env=X (selección de entrada), --url (salta
+// config.js) y --config (otro archivo de config)— antes de que sequelize-cli
+// toque la red. guard.js/config.js son ESM sin top-level await: Node 24 los
+// carga con require() sin problema.
+if (process.env.NODE_ENV === 'test') {
+  const guard = require('./src/db/guard.js');
+  const argv = process.argv.slice(2);
+  const urlArg = guard.cliFlagValue(argv, '--url');
+  // Entorno EFECTIVO del CLI: --env > rc.env (--options-path o cwd rc) > NODE_ENV.
+  const envArg = guard.cliEffectiveEnv(argv, __filename);
+  if (envArg === guard.RC_ENV_AMBIGUOUS) {
+    // rc aún en carga: env desconocido → fail-closed.
+    guard.assertTestDatabaseName(undefined);
+  }
+  const configArg = guard.cliFlagValue(argv, '--config');
+  let target;
+  if (typeof urlArg === 'string' && urlArg.length > 0) {
+    target = { url: urlArg };
+  } else {
+    const configPath = configArg
+      ? path.resolve(process.cwd(), configArg)
+      : path.resolve(__dirname, 'src', 'db', 'config.js');
+    const loaded = require(configPath);
+    const config = loaded.default ?? loaded;
+    target = config[envArg] ?? {};
+  }
+  guard.assertCliTarget(target);
+}
+
+module.exports = {
+  config: path.resolve('src', 'db', 'config.js'),
+  'migrations-path': path.resolve('migrations'),
+  'models-path': path.resolve('src', 'models'),
+};

@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  DB_HOST: 127.0.0.1
+  DB_PORT: 5432
+  DB_USER: runner
+  DB_PASSWORD: runner
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: runner
+          POSTGRES_PASSWORD: runner
+          POSTGRES_DB: runner_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U runner"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Crear base runner_test
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          PGPASSWORD=runner psql -h 127.0.0.1 -U runner -d runner_dev \
+            -c 'CREATE DATABASE runner_test;'
+
+      # Instalar ambos paquetes antes de cualquier validación: la suite de
+      # api inspecciona app/ (ADV-001-F6).
+      - name: api — instalar dependencias
+        working-directory: api
+        run: npm ci
+
+      - name: app — instalar dependencias
+        working-directory: app
+        run: npm ci
+
+      - name: api — migrar runner_dev
+        working-directory: api
+        run: npm run db:migrate
+        env:
+          DB_NAME: runner_dev
+
+      - name: api — migrar runner_test
+        working-directory: api
+        run: npm run db:migrate
+        env:
+          NODE_ENV: test
+          DB_NAME: runner_test
+
+      - name: api — lint
+        working-directory: api
+        run: npm run lint
+
+      - name: api — typecheck
+        working-directory: api
+        run: npm run typecheck
+
+      - name: api — tests
+        working-directory: api
+        run: npm test
+
+      - name: app — lint
+        working-directory: app
+        run: npm run lint
+
+      - name: app — typecheck
+        working-directory: app
+        run: npm run typecheck
+
+      - name: app — tests
+        working-directory: app
+        run: npm test
