@@ -168,3 +168,55 @@ describe('001: ADV-001-F2-R4 — --optionsPath camelCase no leído por la guardi
     );
   });
 });
+
+describe('001: ADV-001-F2-R5 — rc que precarga config.js (ciclo parcial)', () => {
+  // Verificado por el orquestador: un rc externo que hace
+  // `require(<config.js>)` ANTES de exportar carga nuestro config mientras sus
+  // exports aún son {} — la guardia evalúa la entrada "test" (sin --env) y
+  // pasa; la caché de módulos devuelve el config ya evaluado; luego el CLI
+  // elige development y llega a TCP. Guardia exigida ANTES de la red.
+  /**
+   * @param {string} env
+   * @returns {string} path al rc generado
+   */
+  function preloadRc(env) {
+    const dir = mkdtempSync(join(tmpdir(), 'runner-cli-rc5-'));
+    const p = join(dir, 'rc.cjs');
+    writeFileSync(
+      p,
+      `require(${JSON.stringify(configAbs)});\n` +
+        `module.exports = ${JSON.stringify({ config: configAbs, env })};\n`,
+    );
+    return p;
+  }
+
+  test('ADV-001-F2-R5: --options-path con rc preload env:"development" debe abortar', () => {
+    assertGuardAbort(cli(apiDir, ['--options-path', preloadRc('development')]), 'preload kebab');
+  });
+
+  test('ADV-001-F2-R5: --optionsPath con rc preload env:"development" debe abortar (ambas formas)', () => {
+    assertGuardAbort(cli(apiDir, ['--optionsPath', preloadRc('development')]), 'preload camel');
+    assertGuardAbort(
+      cli(apiDir, [`--optionsPath=${preloadRc('development')}`]),
+      'preload camel=',
+    );
+  });
+
+  test('control — rc preload env:"test" muere por red SIN guardia', () => {
+    assertNetworkDeath(cli(apiDir, ['--options-path', preloadRc('test')]), 'preload env=test');
+  });
+
+  test('control — rc preload dev + --env test explícito conserva precedencia de flag', () => {
+    assertNetworkDeath(
+      cli(apiDir, ['--options-path', preloadRc('development'), '--env', 'test']),
+      'preload dev + flag --env test',
+    );
+  });
+
+  test('control — --env development explícito aborta aunque el rc diga test', () => {
+    assertGuardAbort(
+      cli(apiDir, ['--options-path', preloadRc('test'), '--env', 'development']),
+      'preload test + flag --env development',
+    );
+  });
+});
