@@ -4,15 +4,15 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 
 ## Estado actual
 
-- **Fase:** quinto fix F2-R5 y refuerzo de cobertura verificados; pipeline/CI verdes y adversarial sin críticos/altos. Reviewer previo `BLOQUEADO` y decisiones del usuario pendientes; no cumple DoD.
+- **Fase:** quinto fix F2-R5 verificado; Bryan aprobó los siete puntos H-02. Ajustes de dependencias y convención adversarial por aplicar; falta revalidación y reviewer `APROBADO`, no cumple DoD.
 - **Rama:** `feat/001-andamiaje`, desde la planificación integrada en `main`.
-- **Siguiente acción:** resolver siete decisiones con Bryan; aplicar únicamente lo aprobado, registrar ADR y revalidar antes de la revisión `APROBADO` y el PR.
+- **Siguiente acción:** aplicar ADR 0001–0005 por roles, revalidar suites/cobertura/auditoría/CI y obtener revisión `APROBADO` antes del PR. Merge no autorizado.
 
 ## Tabla de funcionalidades
 
 | NNN | Funcionalidad | Estado |
 | --- | --- | --- |
-| 001 | Andamiaje | quinto fix con pruebas/CI verdes y adversarial sin altos; decisiones y reviewer pendientes |
+| 001 | Andamiaje | H-02 aprobado; aplicar ajustes y revalidar antes de reviewer/DoD/PR |
 | 002 | Recorrido local (tracking GPS, 2º plano) | spec propuesta |
 | 003 | Mapa del recorrido (MapLibre) | spec propuesta |
 | 004 | Inicio runner (podómetro + resumen) | spec propuesta |
@@ -99,9 +99,9 @@ Estado del proyecto. Actualizado por el orquestador al cerrar cada paso del cicl
 - Refuerzo de test-writer integrado en `b03819763cc6d0769a7d1aadaa0613caf38127cb` y `e4a1fce21612b3fbb659026744f92bcec4191527`: únicamente `api/tests/regression-cli-rc.test.js`. Cubre rc externo que precarga `.sequelizerc` propio antes de exportar, symlink al mismo rc parcialmente cargado y orden export-first que precarga `config.js`. El orquestador corrigió con test-writer una explicación factual del control: `loaded=false` obliga a rechazo conservador incluso cuando exports ya están poblados; no se confía en ellos como entorno definitivo.
 - Revalidación independiente del orquestador sobre `e4a1fce`: pipeline completo en verde con PostgreSQL 16 y migraciones development/test, API **135/135**, app **2/2**, lint y typecheck de ambos paquetes; `db-up.sh` repetido correctamente. Cobertura API global **100 % líneas / 93,20 % ramas / 100 % funciones**; `.sequelizerc` **100/100/100**, `guard.js` **100/94,94/100**; app raíz/layout **100 %** en todas las métricas. Instrumentación sin cambios. CI del mismo SHA: https://github.com/brayanAndy1996/runner/actions/runs/38166143316 — `completed/success`. Entre `a0518ae` y `e4a1fce` solo cambió ese archivo de tests, no producción, dependencias, scripts ni CI: el re-test independiente conserva su mismo código auditado. Ningún probe usa ni autentica contra `runner_dev` real. Aún faltan decisiones explícitas de Bryan, re-revisión `APROBADO` y verificación DoD.
 
-### Decisiones pendientes de Bryan (H-02 del reviewer)
+### Decisiones de Bryan (H-02 del reviewer)
 
-Ninguna se da por aceptada; la propuesta enviada al usuario no es una autorización:
+Bryan seleccionó explícitamente **«Aprobar los siete puntos»** tras el cierre de cobertura y CI de `7218e6f`. Aprobación registrada en ADR 0001–0005; no autoriza el merge. Las menciones anteriores de decisiones pendientes describen el estado histórico previo.
 
 1. Override compatible de `decode-uri-component@^0.5.x` con ADR.
 2. Pin de `test-renderer@~1.2.0` con ADR (el reporte del reviewer lo llamó `react-native-test-renderer`; ese paquete no está instalado, el real es `test-renderer`).
@@ -110,6 +110,8 @@ Ninguna se da por aceptada; la propuesta enviada al usuario no es una autorizaci
 5. Elegir política para CLI externo que no ejecuta código propio (wrapper obligatorio, limitación documentada o endurecimiento posterior); incluye F5, uso de la factory por convención: `new Sequelize` directo fuera de ella evita la guardia.
 6. Corregir o aceptar explícitamente los bajos/notas F8, F9, F11, F7 y F12.
 7. Reubicar/renombrar regresiones adversariales según `CONSTITUCION.md` §5 o aprobar una enmienda/excepción explícita para API JavaScript. No modificar la constitución para eludir el gate.
+
+Se ejecuta el paquete propuesto: ajustes compatibles de los puntos 1–3 (ADR 0001), deuda temporal acotada del punto 4 (ADR 0002), limitación documentada del CLI/factory del punto 5 (ADR 0003), deuda baja/notas del punto 6 (ADR 0004) y convención estricta `.adversarial.test.ts` del punto 7, sin excepción ni modificación constitucional (ADR 0005).
 
 ## Supuestos abiertos (penden de confirmación del usuario)
 
