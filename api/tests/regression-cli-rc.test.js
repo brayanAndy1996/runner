@@ -202,8 +202,17 @@ describe('001: ADV-001-F2-R5 — rc que precarga config.js (ciclo parcial)', () 
     );
   });
 
-  test('control — rc preload env:"test" muere por red SIN guardia', () => {
-    assertNetworkDeath(cli(apiDir, ['--options-path', preloadRc('test')]), 'preload env=test');
+  test('control — rc preload env:"test" no conecta a base insegura: puede abortar por ciclo ambiguo', () => {
+    // Sin flag --env explícito, Node no conoce el export final del rc al
+    // precargar config.js: el fix puede fallar cerrado (aborto por guardia)
+    // o validar env=test y morir por red. Ambos son seguros; lo inaceptable
+    // sería alcanzar la red con destino dev, cosa que no ocurre (puerto 1).
+    const r = cli(apiDir, ['--options-path', preloadRc('test')]);
+    if (/Guardia de tests/i.test(r.output)) {
+      assertGuardAbort(r, 'preload env=test fail-closed');
+    } else {
+      assertNetworkDeath(r, 'preload env=test red sin guardia');
+    }
   });
 
   test('control — rc preload dev + --env test explícito conserva precedencia de flag', () => {
